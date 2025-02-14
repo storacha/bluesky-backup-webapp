@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "pnpm test",
+    "test": "pnpm lint",
     "pages:build": "pnpm dlx @cloudflare/next-on-pages@1"
   },
   "dependencies": {
