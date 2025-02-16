@@ -1,3 +1,4 @@
+'use client'
 import { Authenticator, Provider, useW3 } from '@w3ui/react'
 import { AuthenticationEnsurer } from '@/components/Authenticator'
 import React from 'react'
