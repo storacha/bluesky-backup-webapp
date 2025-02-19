@@ -1,7 +1,7 @@
 'use client'
-import { Authenticator, Provider, useW3 } from '@w3ui/react'
+import { Authenticator, useW3 } from '@w3ui/react'
 import { AuthenticationEnsurer } from '@/components/Authenticator'
-import React from 'react'
+import Provider from '@/components/W3UIProvider'
 
 function Identity () {
   const [{ client, accounts }] = useW3()
