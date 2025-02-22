@@ -1,23 +1,17 @@
 "use client";
 
-import { useBskyAuthContext } from "@/contexts/bskyAuthProvider";
-import { useCallback, useState } from "react";
+import { useState } from "react";
+import { v4 as uuidv4 } from "uuid";
 
 export default function Home() {
-  const { authenticated, bskyAuthClient } = useBskyAuthContext();
-
   const [handle, setHandle] = useState<string>("");
 
-  const signIn = useCallback(async () => {
-    if (!bskyAuthClient) return;
-    try {
-      await bskyAuthClient.signIn(handle, {
-        scope: "atproto transition:generic",
-      });
-    } catch (err) {
-      console.log(err);
-    }
-  }, [handle, bskyAuthClient]);
+  const signIn = async () => {
+    const state = uuidv4();
+    await fetch(`/api/bluesky-auth/login?handle=${handle}&state=${state}`, {
+      method: "POST",
+    });
+  };
 
   return (
     <>
@@ -25,7 +19,6 @@ export default function Home() {
       <p>Lets get started</p>
       <div>
         <h4>Bluesky Auth</h4>
-        <div>{authenticated ? "Auth" : "Not auth"}</div>
         <input
           onChange={(e) => {
             e.preventDefault();
