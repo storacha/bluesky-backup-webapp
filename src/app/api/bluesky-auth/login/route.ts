@@ -10,11 +10,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: 'Bad request' }, { status: 400 });
   }
 
-  const controller = new AbortController();
-  const signal = controller.signal;
-
   const url = await blueskyClient.authorize(handle, {
-    signal: signal,
+    signal: request.signal,
     state,
     ui_locales: 'fr-CA fr en',
   });
