@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "test": "pnpm lint",
-    "pages:build": "pnpm dlx @cloudflare/next-on-pages@1"
+    "pages:build": "pnpm dlx @cloudflare/next-on-pages@1",
+    "pages:preview": "pnpm run pages:build && wrangler pages dev",
+    "pages:deploy": "pnpm run pages:build && wrangler pages deploy"
   },
   "dependencies": {
     "@atproto/api": "^0.13.35",
