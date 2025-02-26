@@ -1,6 +1,6 @@
 import { OAuthClientMetadataInput } from "@atproto/oauth-client-browser";
 
-export const blueskyClientUri = process.env.NEXT_PUBLIC_BLUESKY_CLIENT_URI || "https://localhost:3000"
+export const blueskyClientUri = process.env.NEXT_PUBLIC_BLUESKY_CLIENT_URI || "https://localhost:3000/"
 
 export const blueskyClientMetadata: OAuthClientMetadataInput = {
     "client_id": `${blueskyClientUri}bluesky-client-metadata`,
