@@ -1,9 +1,14 @@
 import { Provider } from '@w3ui/react'
+import { serviceConnection, servicePrincipal } from './services'
+import { ReactNode } from 'react'
 
-export default function W3UIProvider({ children }: { children: React.ReactNode }) {
+export default function W3UIProvider ({ children }: { children: ReactNode }) {
   return (
-    <Provider>
-      {children}
+    <Provider
+      connection={serviceConnection}
+      servicePrincipal={servicePrincipal}
+    >
+      <>{children}</>
     </Provider>
   )
 }
