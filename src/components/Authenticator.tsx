@@ -22,15 +22,13 @@ export function AuthenticationForm (): ReactNode {
 export function AuthenticationSubmitted (): ReactNode {
   const [{ email }] = useAuthenticator()
   return (
-    <div className=''>
-      <div className=''>
+    <div>
         <p className='py-1'>
           Click the link in the email we sent to <span className='font-semibold tracking-wide'>{email}</span> to authorize this agent.
         </p>
         <Authenticator.CancelButton className='btn pb-2' >
           Cancel
         </Authenticator.CancelButton>
-      </div>
     </div>
   )
 }

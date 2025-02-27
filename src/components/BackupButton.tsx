@@ -82,7 +82,7 @@ export default function BackupButton () {
           className="btn">
           {space ? "Back It Up!" : "Please Pick a Space"}
         </button>
-      </div >
+      </div>
     )
   ) : (
     <div>Please authenticate to both Bluesky and Storacha to continue.</div>
