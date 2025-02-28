@@ -1,6 +1,6 @@
+import type { ReactNode } from 'react'
 import { Provider } from '@w3ui/react'
 import { serviceConnection, servicePrincipal } from './services'
-import { ReactNode } from 'react'
 
 export default function W3UIProvider ({ children }: { children: ReactNode }) {
   return (
