@@ -1,10 +1,10 @@
 "use client";
 
-import { BskyAuthProvider } from "@/contexts/bskyAuthProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import React, { useState } from "react";
+import dynamic from "next/dynamic";
 
-export default function RootProviders({
+export default function RootProviders ({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -22,9 +22,23 @@ export default function RootProviders({
       })
   );
 
+  const BskyAuthProvider = dynamic(() => import('../components/BlueskyAuthProvider'), {
+    loading: () => <p>Loading...</p>,
+    ssr: false
+  })
+
+  const StorachaAuthProvider = dynamic(() => import('../components/W3UIProvider'), {
+    loading: () => <p>Loading...</p>,
+    ssr: false
+  })
+
   return (
     <QueryClientProvider client={queryClient}>
-      <BskyAuthProvider>{children}</BskyAuthProvider>
+      <BskyAuthProvider>
+        <StorachaAuthProvider>
+          {children}
+        </StorachaAuthProvider>
+      </BskyAuthProvider>
     </QueryClientProvider>
   );
 }

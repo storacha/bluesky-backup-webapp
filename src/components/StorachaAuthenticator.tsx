@@ -1,12 +1,12 @@
 'use client'
+
 import { Authenticator, useW3 } from '@w3ui/react'
 import { AuthenticationEnsurer } from '@/components/Authenticator'
-import Provider from '@/components/W3UIProvider'
 
 function Identity () {
   const [{ client, accounts }] = useW3()
   return (
-    <div className="m-12">
+    <div>
       <p className="mb-6">
         You&apos;re signed in as <b>{accounts[0].toEmail()}</b>.
       </p>
@@ -20,18 +20,13 @@ function Identity () {
   )
 }
 
-function page () {
+
+export default function StorachaAuthenticator () {
   return (
-    <div className='bg-grad flex flex-col items-center h-screen'>
-      <Provider>
-        <Authenticator>
-          <AuthenticationEnsurer>
-            <Identity />
-          </AuthenticationEnsurer>
-        </Authenticator>
-      </Provider>
-    </div>
+    <Authenticator>
+      <AuthenticationEnsurer>
+        <Identity />
+      </AuthenticationEnsurer>
+    </Authenticator>
   )
 }
-
-export default page

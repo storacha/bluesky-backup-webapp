@@ -1,34 +1,22 @@
-"use client";
-
-import { useState } from "react";
-import { v4 as uuidv4 } from "uuid";
+import BackupButton from "@/components/BackupButton";
+import BlueskyAuthenticator from "@/components/BlueskyAuthenticator";
+import StorachaAuthenticator from "@/components/StorachaAuthenticator";
 
 export default function Home() {
-  const [handle, setHandle] = useState<string>("");
-
-  const signIn = async () => {
-    const state = uuidv4();
-    await fetch(`/api/bluesky-auth/login?handle=${handle}&state=${state}`, {
-      method: "POST",
-    });
-  };
-
   return (
-    <>
-      <h1>Blusky Backup Webapp</h1>
-      <p>Lets get started</p>
-      <div>
-        <h4>Bluesky Auth</h4>
-        <input
-          onChange={(e) => {
-            e.preventDefault();
-            setHandle(e.target.value);
-          }}
-          value={handle}
-          placeholder="Handler"
-        />
-        <button onClick={signIn}>Sign in</button>
+    <div className="bg-white/80 p-10 h-screen">
+      <h1 className="text-2xl mb-8">Bluesky Backups</h1>
+      <div className="mb-4">
+        <h4 className="text-lg">Bluesky Auth</h4>
+        <BlueskyAuthenticator />
       </div>
-    </>
+
+      <div className="mb-4">
+        <h4 className="text-lg">Storacha Auth</h4>
+        <StorachaAuthenticator />
+      </div>
+
+      <BackupButton />
+    </div>
   );
 }

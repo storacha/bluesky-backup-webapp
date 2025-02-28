@@ -1,36 +1,24 @@
+'use client'
+
+import { BskyAuthContext } from "@/contexts";
+import { blueskyClientMetadata } from "@/lib/bluesky";
 import { Agent } from "@atproto/api";
-import { ProfileViewBasic } from "@atproto/api/dist/client/types/app/bsky/actor/defs";
 import {
   OAuthSession,
   BrowserOAuthClient,
 } from "@atproto/oauth-client-browser";
 import { useQuery } from "@tanstack/react-query";
 import {
-  createContext,
   JSX,
   ReactNode,
-  useContext,
   useEffect,
   useMemo,
   useState,
 } from "react";
 
-type BskyAuthContextProps = {
-  authenticated: boolean;
-  session?: OAuthSession;
-  state?: string;
-  userProfile?: ProfileViewBasic;
-  bskyAuthClient?: BrowserOAuthClient;
-};
-
-const BskyAuthContext = createContext<BskyAuthContextProps>({
-  authenticated: false,
-});
-
 type Props = {
   children: JSX.Element | JSX.Element[] | ReactNode;
 };
-
 export const BskyAuthProvider = ({ children }: Props) => {
   const [authenticated, setAuthenticated] = useState<boolean>(false);
   const [bskyAuthClient, setBskyAuthClient] = useState<BrowserOAuthClient>();
@@ -39,8 +27,7 @@ export const BskyAuthProvider = ({ children }: Props) => {
 
   const bskyAgent = useMemo(() => {
     if (!authenticated || !session) return;
-    const agent = new Agent(session);
-    return agent;
+    return new Agent(session);
   }, [authenticated, session]);
 
   const { data: userProfile } = useQuery({
@@ -56,8 +43,8 @@ export const BskyAuthProvider = ({ children }: Props) => {
 
   useEffect(() => {
     const initBsky = async () => {
-      const bskyAuthClient = await BrowserOAuthClient.load({
-        clientId: "https://spread-accurately-group-misc.trycloudflare.com/",
+      const bskyAuthClient = new BrowserOAuthClient({
+        clientMetadata: blueskyClientMetadata,
         handleResolver: "https://bsky.social",
       });
       setBskyAuthClient(bskyAuthClient);
@@ -97,6 +84,7 @@ export const BskyAuthProvider = ({ children }: Props) => {
         state,
         userProfile,
         bskyAuthClient,
+        agent: bskyAgent
       }}
     >
       {children}
@@ -104,6 +92,4 @@ export const BskyAuthProvider = ({ children }: Props) => {
   );
 };
 
-export const useBskyAuthContext = () => {
-  return useContext(BskyAuthContext);
-};
+export default BskyAuthProvider
