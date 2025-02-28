@@ -1,5 +1,6 @@
 'use client'
 
+import { Agent } from "@atproto/api";
 import { ProfileViewBasic } from "@atproto/api/dist/client/types/app/bsky/actor/defs";
 import {
   OAuthSession,
@@ -12,14 +13,17 @@ import {
 } from "react";
 
 type BskyAuthContextProps = {
+  initialized: boolean;
   authenticated: boolean;
   session?: OAuthSession;
   state?: string;
   userProfile?: ProfileViewBasic;
   bskyAuthClient?: BrowserOAuthClient;
+  agent?: Agent;
 };
 
 export const BskyAuthContext = createContext<BskyAuthContextProps>({
+  initialized: false,
   authenticated: false,
 });
 
