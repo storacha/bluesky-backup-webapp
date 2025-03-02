@@ -1,12 +1,12 @@
-import { Agent } from "@atproto/api";
-import { ProfileViewBasic } from "@atproto/api/dist/client/types/app/bsky/actor/defs";
-import { OAuthClientMetadataInput } from "@atproto/oauth-client-browser";
-import { Client } from "@w3ui/react";
+import { Agent } from "@atproto/api"
+import { ProfileViewBasic } from "@atproto/api/dist/client/types/app/bsky/actor/defs"
+import { OAuthClientMetadataInput } from "@atproto/oauth-client-browser"
+import { Client } from "@w3ui/react"
 
-export const blueskyClientUri = process.env.NEXT_PUBLIC_BLUESKY_CLIENT_URI || "https://localhost:3000/"
+export const blueskyClientUri = process.env.BLUESKY_CLIENT_URI || "https://localhost:3000/"
 
 export const blueskyClientMetadata: OAuthClientMetadataInput = {
-    "client_id": `${blueskyClientUri}bluesky-client-metadata`,
+    "client_id": `${blueskyClientUri}/bluesky-client-metadata`,
     "client_name": "Local Dev App",
     "client_uri": blueskyClientUri,
     "application_type": "web",
@@ -15,7 +15,8 @@ export const blueskyClientMetadata: OAuthClientMetadataInput = {
     "redirect_uris": [blueskyClientUri],
     "token_endpoint_auth_method": "none",
     "scope": "atproto transition:generic",
-    "dpop_bound_access_tokens": true
+    "dpop_bound_access_tokens": true,
+    "jwks_uri": `${blueskyClientUri}/jwk.json`,
 }
 
 export async function backup(profile: ProfileViewBasic, agent: Agent, storachaClient: Client){

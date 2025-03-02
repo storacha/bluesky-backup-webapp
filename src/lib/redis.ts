@@ -1,5 +1,11 @@
-import { redis } from "@/instances/redis";
+import Redis from "ioredis";
 import { NodeSavedSession, NodeSavedState } from "@atproto/oauth-client-node";
+
+if (!process.env.REDIS_URL) {
+  throw new Error('Missing REDIS_URL');
+}
+
+export const redis = new Redis(process.env.REDIS_URL);
 
 export const setStateStore = async (key: string, internalState: NodeSavedState): Promise<void> => {
   await redis.set(key, JSON.stringify(internalState));
