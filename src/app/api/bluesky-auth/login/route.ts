@@ -1,4 +1,4 @@
-import { blueskyClient } from "@/instances/bluesky";
+import { blueskyServerClient } from "@/lib/blueskyServerAuth";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -10,11 +10,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: 'Bad request' }, { status: 400 });
   }
 
-  const url = await blueskyClient.authorize(handle, {
+  const url = await blueskyServerClient.authorize(handle, {
     signal: request.signal,
     state,
     ui_locales: 'fr-CA fr en',
   });
 
-  return NextResponse.redirect(url);
+  return NextResponse.json({ url: url.href });
 }
