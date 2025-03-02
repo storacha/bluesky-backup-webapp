@@ -1,5 +1,6 @@
 import BackupButton from "@/components/BackupButton";
 import BlueskyAuthenticator from "@/components/BlueskyAuthenticator";
+import BlueskyServerAuthenticator from "@/components/BlueskyServerAuthenticator";
 import StorachaAuthenticator from "@/components/StorachaAuthenticator";
 
 export default function Home() {
@@ -16,6 +17,10 @@ export default function Home() {
         <StorachaAuthenticator />
       </div>
 
+      <div className="mb-4">
+        <h4 className="text-lg">Bluesky Server Auth</h4>
+        <BlueskyServerAuthenticator />
+      </div>
       <BackupButton />
     </div>
   );
