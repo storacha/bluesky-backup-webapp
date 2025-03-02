@@ -1,7 +1,9 @@
 import { JoseKey } from "@atproto/jwk-jose";
 import { NodeOAuthClient, type NodeSavedState, type NodeSavedSession } from "@atproto/oauth-client-node"
 import { delSessionStore, delStateStore, getSessionStore, getStateStore, setSessionStore, setStateStore } from './redis'
-import { blueskyClientMetadata } from "./bluesky";
+import { blueskyServerClientMetadata } from "./blueskyServerConfig";
+
+export const blueskyClientUri = process.env.BLUESKY_CLIENT_URI || "https://localhost:3000/"
 
 if (!process.env.PRIVATE_KEY_1) {
   throw new Error('Missing private keys')
@@ -9,7 +11,7 @@ if (!process.env.PRIVATE_KEY_1) {
 
 // Server authentication implementation.
 export const blueskyServerClient = new NodeOAuthClient({
-  clientMetadata: blueskyClientMetadata,
+  clientMetadata: blueskyServerClientMetadata,
   keyset: await Promise.all([
       JoseKey.fromImportable(process.env.PRIVATE_KEY_1),
   ]),
