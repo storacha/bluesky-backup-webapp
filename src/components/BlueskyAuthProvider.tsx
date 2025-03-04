@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import { BskyAuthContext } from "@/contexts";
 import { blueskyClientMetadata } from "@/lib/bluesky";
@@ -8,13 +8,7 @@ import {
   BrowserOAuthClient,
 } from "@atproto/oauth-client-browser";
 import { useQuery } from "@tanstack/react-query";
-import {
-  JSX,
-  ReactNode,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { JSX, ReactNode, useEffect, useMemo, useState } from "react";
 
 type Props = {
   children: JSX.Element | JSX.Element[] | ReactNode;
@@ -84,7 +78,7 @@ export const BskyAuthProvider = ({ children }: Props) => {
         state,
         userProfile,
         bskyAuthClient,
-        agent: bskyAgent
+        agent: bskyAgent,
       }}
     >
       {children}
@@ -92,4 +86,4 @@ export const BskyAuthProvider = ({ children }: Props) => {
   );
 };
 
-export default BskyAuthProvider
+export default BskyAuthProvider;

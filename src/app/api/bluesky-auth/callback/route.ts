@@ -4,13 +4,19 @@ import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
+  const code = searchParams.get('code')
+
+  if (!code) {
+    return NextResponse.json({ message: 'No code provided' }, { status: 400 })
+  }
 
   const { session, state } = await blueskyServerClient.callback(searchParams)
-  const token = await session.getTokenInfo()
+  if (!session || !state) {
+    return NextResponse.json({ message: 'Invalid authentication response' }, { status: 400 })
+  }
   
   console.log('authorize() was called with state:', state)
   console.log('User authenticated as:', session.did)
-  console.log('Token:', token)
 
   const agent = new Agent(session)
   if (!agent.did) {

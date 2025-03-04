@@ -1,9 +1,9 @@
-import { Agent } from "@atproto/api"
-import { ProfileViewBasic } from "@atproto/api/dist/client/types/app/bsky/actor/defs"
-import { OAuthClientMetadataInput } from "@atproto/oauth-client-browser"
-import { Client } from "@w3ui/react"
+import { Agent } from "@atproto/api";
+import { ProfileViewBasic } from "@atproto/api/dist/client/types/app/bsky/actor/defs";
+import { OAuthClientMetadataInput } from "@atproto/oauth-client-browser";
+import { Client } from "@w3ui/react";
 
-export const blueskyClientUri = process.env.BLUESKY_CLIENT_URI || "https://localhost:3000/"
+export const blueskyClientUri = process.env.NEXT_PUBLIC_BLUESKY_CLIENT_URI || "https://localhost:3000/"
 
 export const blueskyClientMetadata: OAuthClientMetadataInput = {
     "client_id": `${blueskyClientUri}/bluesky-client-metadata`,
@@ -61,3 +61,4 @@ export async function backup(profile: ProfileViewBasic, agent: Agent, storachaCl
     
     } while (blobCursor)
 }
+

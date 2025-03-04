@@ -17,6 +17,7 @@ export default function Home() {
         <StorachaAuthenticator />
       </div>
 
+      {/* This is for showcasing the Bluesky Server Auth in server-side */}
       <div className="mb-4">
         <h4 className="text-lg">Bluesky Server Auth</h4>
         <BlueskyServerAuthenticator />
