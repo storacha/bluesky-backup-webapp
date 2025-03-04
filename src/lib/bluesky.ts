@@ -42,7 +42,7 @@ export async function backup (profile: ProfileViewBasic, agent: Agent, storachaC
     console.log("got repo with headers", repoRes.headers)
 
     eventTarget?.dispatchEvent(new CustomEvent('repo:uploading'))
-    const storachaRepoCid = await storachaClient.uploadCAR(new Blob([repoRes.data]))
+    const storachaRepoCid = await storachaClient.uploadFile(new Blob([repoRes.data]))
     eventTarget?.dispatchEvent(new CustomEvent('repo:uploaded', { detail: { cid: storachaRepoCid } }))
 
 
