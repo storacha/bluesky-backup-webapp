@@ -11,7 +11,7 @@ export default async function Backups ({ params }: BackupsProps) {
   const id = (await params).id
   
   return (
-    <div className="bg-white/80 p-10 h-screen">
+    <div className="bg-white/80 p-10 h-full min-h-screen">
       <h1 className="text-xl font-mono font-bold uppercase">Backup {id}</h1>
       <Repos backupId={id} className='py-4 w-full' />
       <Blobs backupId={id} className='py-4 w-full' />
