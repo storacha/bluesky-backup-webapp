@@ -8,7 +8,7 @@ export default function W3UIProvider ({ children }: { children: ReactNode }) {
       connection={serviceConnection}
       servicePrincipal={servicePrincipal}
     >
-      <>{children}</>
+      {children}
     </Provider>
   )
 }

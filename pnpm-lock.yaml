@@ -11,6 +11,9 @@ importers:
       '@atproto/api':
         specifier: ^0.13.35
         version: 0.13.35
+      '@atproto/crypto':
+        specifier: ^0.4.4
+        version: 0.4.4
       '@atproto/oauth-client-browser':
         specifier: ^0.3.9
         version: 0.3.10
@@ -20,12 +23,12 @@ importers:
       '@heroicons/react':
         specifier: ^2.2.0
         version: 2.2.0(react@18.3.1)
-      '@tailwindcss/postcss':
-        specifier: ^4.0.9
-        version: 4.0.9
       '@ipld/dag-ucan':
         specifier: ^3.4.5
         version: 3.4.5
+      '@tailwindcss/postcss':
+        specifier: ^4.0.9
+        version: 4.0.9
       '@tanstack/react-query':
         specifier: ^5.66.0
         version: 5.66.0(react@18.3.1)
@@ -65,6 +68,9 @@ importers:
       tailwindcss:
         specifier: ^4.0.9
         version: 4.0.9
+      uint8arrays:
+        specifier: ^5.1.0
+        version: 5.1.0
     devDependencies:
       '@cloudflare/next-on-pages':
         specifier: ^1.13.7
@@ -141,6 +147,10 @@ packages:
 
   '@atproto/common-web@0.4.0':
     resolution: {integrity: sha512-ZYL0P9myHybNgwh/hBY0HaBzqiLR1B5/ie5bJpLQAg0whRzNA28t8/nU2vh99tbsWcAF0LOD29M8++LyENJLNQ==}
+
+  '@atproto/crypto@0.4.4':
+    resolution: {integrity: sha512-Yq9+crJ7WQl7sxStVpHgie5Z51R05etaK9DLWYG/7bR5T4bhdcIgF6IfklLShtZwLYdVVj+K15s0BqW9a8PSDA==}
+    engines: {node: '>=18.7.0'}
 
   '@atproto/did@0.1.5':
     resolution: {integrity: sha512-8+1D08QdGE5TF0bB0vV8HLVrVZJeLNITpRTUVEoABNMRaUS7CoYSVb0+JNQDeJIVmqMjOL8dOjvCUDkp3gEaGQ==}
@@ -3623,6 +3633,12 @@ snapshots:
       multiformats: 9.9.0
       uint8arrays: 3.0.0
       zod: 3.24.2
+
+  '@atproto/crypto@0.4.4':
+    dependencies:
+      '@noble/curves': 1.8.1
+      '@noble/hashes': 1.7.1
+      uint8arrays: 3.0.0
 
   '@atproto/did@0.1.5':
     dependencies:
