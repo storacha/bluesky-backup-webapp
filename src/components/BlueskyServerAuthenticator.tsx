@@ -1,10 +1,32 @@
 "use client";
 
 import { redirect } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
+
+interface BlueskySession {
+  did: string;
+  handle: string;
+}
+
 export default function BlueskyServerAuthenticator() {
   const [handle, setHandle] = useState<string>("");
+  const [session, setSession] = useState<BlueskySession | null>(null);
+
+  useEffect(() => {
+    // Check if we have a session cookie on mount
+    const checkSession = async () => {
+      const response = await fetch("/api/bluesky-auth/session");
+      if (response.ok) {
+        const data = await response.json();
+        if (data.session) {
+          setSession(data.session);
+        }
+      }
+    };
+
+    checkSession();
+  }, []);
 
   const signIn = useCallback(async () => {
     const state = uuidv4();
@@ -22,11 +44,29 @@ export default function BlueskyServerAuthenticator() {
 
     const data = await response.json();
     redirect(data.url);
-
-    // const url = new URL(await url.text());
-
-    console.log("login");
   }, [handle]);
+
+  const signOut = useCallback(async () => {
+    const response = await fetch("/api/bluesky-auth/logout", {
+      method: "POST",
+    });
+
+    if (response.ok) {
+      setSession(null);
+    }
+  }, []);
+
+  if (session) {
+    return (
+      <div className="flex flex-col gap-2">
+        <div>Logged in as: {session.handle}</div>
+        <div>DID: {session.did}</div>
+        <button onClick={signOut} className="btn">
+          Sign out
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div>
