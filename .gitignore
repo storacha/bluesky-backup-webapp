@@ -42,3 +42,6 @@ next-env.d.ts
 
 # wrangler
 .wrangler
+
+# Local environment variables
+.env
