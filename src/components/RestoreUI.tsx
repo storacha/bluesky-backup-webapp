@@ -6,8 +6,10 @@ import { blueskyClientMetadata } from "@/lib/bluesky"
 import { useLiveQuery } from "dexie-react-hooks"
 import { OAuthSession, BrowserOAuthClient } from "@atproto/oauth-client-browser";
 import { ATPROTO_DEFAULT_SINK, ATPROTO_DEFAULT_SOURCE, REQUIRED_ATPROTO_SCOPE } from "@/lib/constants";
-import { useState } from "react"
+import { ChangeEvent, useState } from "react"
 import { useForm } from "react-hook-form"
+import { Secp256k1Keypair } from "@atproto/crypto"
+import * as ui8 from "uint8arrays"
 
 type LoginFn = (identifier: string, password: string, options?: { server?: string }) => Promise<void>
 
@@ -58,6 +60,9 @@ export default function RestoreButton ({ backupId }: { backupId: string }) {
   const [sourceAgent, setSourceAgent] = useState<Agent>()
   const [sinkSession, setSinkSession] = useState<CredentialSession>()
   const [sinkAgent, setSinkAgent] = useState<Agent>()
+  const [plcToken, setPlcToken] = useState<string>("")
+  const [isTokenRequested, setTokenRequested] = useState<boolean>(false)
+  const [finalRecoveryKey, setFinalRecoveryKey] = useState<string | null>(null)
 
   const loginToSource: LoginFn = async (identifier: string, password: string, { server = ATPROTO_DEFAULT_SOURCE } = { server: ATPROTO_DEFAULT_SOURCE }) => {
     const session = new CredentialSession(new URL(server))
@@ -113,8 +118,22 @@ export default function RestoreButton ({ backupId }: { backupId: string }) {
     }
   }
 
+  // at this point, the token for the public ledger chain Op should be
+  // sent to the email address associated with `sourceAgent` (pretty-much the Old PDS)
+  async function startRestoration() {
+    if (!sourceAgent) return;
+    await sourceAgent.com.atproto.identity.requestPlcOperationSignature();
+    setTokenRequested(true)
+  }
+
   async function restore () {
-    if (repos && sinkAgent) {
+    if (!plcToken || !repos || !sinkAgent || !sourceAgent || !sourceSession) {
+      console.log('not restoring:')
+      console.log('repos', repos)
+      return;
+    }
+
+    try {
       for (const repo of repos) {
         console.log("restoring", repo.cid)
         const response = await fetch(`https://w3s.link/ipfs/${repo.cid}`)
@@ -122,12 +141,35 @@ export default function RestoreButton ({ backupId }: { backupId: string }) {
           encoding: 'application/vnd.ipld.car',
         })
       }
-      await sinkAgent.com.atproto.server.activateAccount()
 
-    } else {
-      console.log('not restoring:')
-      console.log('repos', repos)
+      const recoveryKey = await Secp256k1Keypair.create({ exportable: true });
+      const privateKeyBytes = await recoveryKey.export()
+      const privateKey = ui8.toString(privateKeyBytes, "hex")
+      setFinalRecoveryKey(privateKey)
+
+      const credentials = await sinkAgent.com.atproto.identity.getRecommendedDidCredentials();
+      const rotationKeys = credentials.data.rotationKeys ?? []
+      const plcOp = await sourceAgent.com.atproto.identity.signPlcOperation({
+        ...credentials.data,
+        token: plcToken,
+        rotationKeys: [recoveryKey.did(), ...rotationKeys]
+      })
+
+      // we should probably show this in a modal with a clipborad icon which allows
+      // people to copy to their clipboard via `navigator.clipboard`
+      console.log(
+        `❗ Your private recovery key is: ${privateKey}. Please store this in a secure location! ❗`,
+      )
+
+      await sinkAgent.com.atproto.identity.submitPlcOperation({
+        operation: plcOp.data.operation
+      })
+      await sinkAgent.com.atproto.server.activateAccount()
+    } catch (error) {
+      console.error(`Restor failed: ${(error as Error).message}`)
+      alert(`Restore failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
+
   }
   return (
     <div>
@@ -162,7 +204,42 @@ export default function RestoreButton ({ backupId }: { backupId: string }) {
         </div>
       </div>
       {(sourceSession && sinkSession) ? (
-        <button onClick={restore} className='btn'>Restore</button>
+        <>
+          <div className="mt-4">
+            {!isTokenRequested ?
+              <button onClick={startRestoration} className="btn">Start migration process</button> :
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={plcToken}
+                  placeholder="Please enter token from email"
+                  className="ipt w-full"
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setPlcToken(e.target.value)}
+                />
+                <button onClick={restore} className="btn">
+                  Complete Restore
+                </button>
+              </div>
+            }
+          </div>
+
+          {/* this should be a modal, i'll check how that works out in tailwind */}
+          {finalRecoveryKey && (
+            <div className="mt-4 p-4 bg-gray-100 rounded-sm">
+              <p className="font-bold mb-2">❗ Important Recovery Key ❗</p>
+              <div className="flex items-center gap-2">
+                <code className="flex-1">{finalRecoveryKey}</code>
+                <button
+                  onClick={() => navigator.clipboard.writeText(finalRecoveryKey)}
+                  className="btn"
+                >
+                  Copy
+                </button>
+              </div>
+              <p className="mt-2 text-sm">Please store this key securely! You&apos;ll need it to recover your account.</p>
+            </div>
+          )}
+        </>
       ) : (
         <div>
           Please log in to your old and new Bluesky servers.
@@ -242,4 +319,3 @@ function AtprotoCreateAccountForm ({ createAccount, defaultServer }: AtprotoCrea
     </form>
   )
 }
-

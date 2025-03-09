@@ -14,11 +14,12 @@
   },
   "dependencies": {
     "@atproto/api": "^0.13.35",
+    "@atproto/crypto": "^0.4.4",
     "@atproto/oauth-client-browser": "^0.3.9",
     "@headlessui/react": "^2.2.0",
     "@heroicons/react": "^2.2.0",
-    "@tailwindcss/postcss": "^4.0.9",
     "@ipld/dag-ucan": "^3.4.5",
+    "@tailwindcss/postcss": "^4.0.9",
     "@tanstack/react-query": "^5.66.0",
     "@ucanto/client": "^9.0.1",
     "@ucanto/transport": "^9.1.1",
@@ -31,7 +32,8 @@
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-hook-form": "^7.54.2",
-    "tailwindcss": "^4.0.9"
+    "tailwindcss": "^4.0.9",
+    "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
     "@cloudflare/next-on-pages": "^1.13.7",
