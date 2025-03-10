@@ -1,3 +1,6 @@
+'use client'
+
+import { Backup } from "@/lib/db";
 import { Agent } from "@atproto/api";
 import { ProfileViewBasic } from "@atproto/api/dist/client/types/app/bsky/actor/defs";
 import { OAuthClientMetadataInput } from "@atproto/oauth-client-browser";
@@ -23,6 +26,7 @@ export interface BackupMetadataStore {
     addRepo: (cid: string, uploadCid: string, backupId: number, accountDid: string) => Promise<void>
     addBlob: (cid: string, backupId: number, accountDid: string) => Promise<void>
     addBackup: (accountDid: string) => Promise<number>
+    listBackups: () => Promise<Backup[]>
 }
 
 export interface BackupOptions {

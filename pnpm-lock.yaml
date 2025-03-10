@@ -20,12 +20,12 @@ importers:
       '@heroicons/react':
         specifier: ^2.2.0
         version: 2.2.0(react@18.3.1)
-      '@tailwindcss/postcss':
-        specifier: ^4.0.9
-        version: 4.0.9
       '@ipld/dag-ucan':
         specifier: ^3.4.5
         version: 3.4.5
+      '@tailwindcss/postcss':
+        specifier: ^4.0.9
+        version: 4.0.9
       '@tanstack/react-query':
         specifier: ^5.66.0
         version: 5.66.0(react@18.3.1)
@@ -129,6 +129,9 @@ importers:
       storybook:
         specifier: ^8.6.4
         version: 8.6.4
+      storybook-react-context:
+        specifier: ^0.7.0
+        version: 0.7.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@8.6.4)
       typescript:
         specifier: ^5
         version: 5.7.3
@@ -5704,6 +5707,12 @@ packages:
   stoppable@1.1.0:
     resolution: {integrity: sha512-KXDYZ9dszj6bzvnEMRYvxgeTHU74QBFL54XKtP3nyMuJ81CFYtABZ3bAzL2EdFUaEwJOBOgENyFj3R7oTzDyyw==}
     engines: {node: '>=4', npm: '>=6'}
+
+  storybook-react-context@0.7.0:
+    resolution: {integrity: sha512-esCfwMhnHfJZQipRHfVpjH5mYBfOjj2JEi5XFAZ2BXCl3mIEypMdNCQZmNUvuR1u8EsQWClArhtL0h+FCiLcrw==}
+    peerDependencies:
+      react: '>=18'
+      react-dom: '>=18'
 
   storybook@8.6.4:
     resolution: {integrity: sha512-XXh1Acvf1r3BQX0BDLQw6yhZ7yUGvYxIcKOBuMdetnX7iXtczipJTfw0uyFwk0ltkKEE9PpJvivYmARF3u64VQ==}
@@ -12703,6 +12712,14 @@ snapshots:
   std-env@3.8.1: {}
 
   stoppable@1.1.0: {}
+
+  storybook-react-context@0.7.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@8.6.4):
+    dependencies:
+      '@storybook/preview-api': 8.6.4(storybook@8.6.4)
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+    transitivePeerDependencies:
+      - storybook
 
   storybook@8.6.4:
     dependencies:

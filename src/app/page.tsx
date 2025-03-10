@@ -1,7 +1,7 @@
-import BackupButton from "@/components/BackupButton";
 import BlueskyAuthenticator from "@/components/BlueskyAuthenticator";
 import StorachaAuthenticator from "@/components/StorachaAuthenticator";
 import { Backups } from "@/components/Backups";
+import BackupUI from "@/components/BackupUI";
 
 export default function Home () {
   return (
@@ -21,7 +21,7 @@ export default function Home () {
         </div>
       </div>
 
-      <BackupButton />
+      <BackupUI />
 
       <Backups className="mt-16" />
     </div>

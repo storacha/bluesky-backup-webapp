@@ -5,34 +5,20 @@ import { backup, BackupMetadataStore } from "@/lib/bluesky"
 import { Space, useW3 } from "@w3ui/react"
 import { useState } from "react"
 import { SpaceFinder } from "./SpaceFinder"
-import db from "@/app/db"
-
-const backupMetadataStore: BackupMetadataStore = {
-  async setLatestCommit (accountDid, commitRev) {
-    await db.commits.put({ accountDid, commitRev })
-  },
-  async addRepo (cid, uploadCid, backupId, accountDid) {
-    await db.repos.put({ cid, uploadCid, backupId, accountDid })
-  },
-  async addBlob (cid, backupId, accountDid) {
-    await db.blobs.put({ cid, backupId, accountDid })
-  },
-  async addBackup (accountDid) {
-    return await db.backups.add({ accountDid, createdAt: new Date() })
-  }
-}
 
 export interface BackupButtonProps {
   backupMetadataStore: BackupMetadataStore
 }
 
-export default function BackupButton () {
+export default function BackupButton ({
+   backupMetadataStore,
+  }: BackupButtonProps) {
   const [isBackingUp, setIsBackingUp] = useState(false)
   const [selectedSpace, setSelectedSpace] = useState<Space>()
   const [storacha] = useW3()
   const bluesky = useBskyAuthContext()
   const backupEvents = new EventTarget()
-  const space = selectedSpace ?? storacha?.spaces[0]
+  const space = selectedSpace ?? storacha?.spaces?.[0]
   async function onClick () {
     if (space && bluesky.userProfile && bluesky.agent && storacha.client) {
       await storacha.client.setCurrentSpace(space.did())
@@ -44,7 +30,7 @@ export default function BackupButton () {
       console.log('not backing up, profile, agent, client:', bluesky.userProfile, bluesky.agent, storacha.client)
     }
   }
-  const userAuthenticatedToBothServices = bluesky.userProfile && (storacha.accounts.length > 0)
+  const userAuthenticatedToBothServices = bluesky.userProfile && storacha.accounts[0]
   const [backupProgressComponent, setBackupProgressComponent] = useState(
     <>
       Backing up your Bluesky account...

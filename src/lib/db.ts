@@ -2,26 +2,26 @@
 
 import Dexie, { type EntityTable } from 'dexie'
 
-interface Backup {
+export interface Backup {
   id: number;
   accountDid: string;
   createdAt: Date;
 }
 
-interface Repo {
+export interface Repo {
   cid: string;
   uploadCid: string;
   backupId: number;
   accountDid: string;
 }
 
-interface Blob {
+export interface Blob {
   cid: string;
   backupId: number;
   accountDid: string;
 }
 
-interface Commit {
+export interface Commit {
   accountDid: string;
   commitRev: string;
 }

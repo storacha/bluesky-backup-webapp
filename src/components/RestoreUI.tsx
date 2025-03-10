@@ -1,6 +1,6 @@
 'use client'
 
-import db from "@/app/db"
+import db from "@/lib/db"
 import { Agent, CredentialSession } from '@atproto/api'
 import { blueskyClientMetadata } from "@/lib/bluesky"
 import { useLiveQuery } from "dexie-react-hooks"

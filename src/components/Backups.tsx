@@ -1,6 +1,6 @@
 'use client'
 
-import db from "@/app/db"
+import db from "@/lib/db"
 import { shortenCID, shortenDID } from "@/lib/ui"
 import { useLiveQuery } from "dexie-react-hooks"
 
