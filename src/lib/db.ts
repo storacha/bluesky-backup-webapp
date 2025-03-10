@@ -26,7 +26,7 @@ export interface Commit {
   commitRev: string;
 }
 
-const db = new Dexie('storacha-bluesky-backups') as Dexie & {
+export type BackupsDB = Dexie & {
   backups: EntityTable<
     Backup,
     'id'
@@ -43,14 +43,19 @@ const db = new Dexie('storacha-bluesky-backups') as Dexie & {
     Commit,
     'accountDid'
   >;
-};
+}
 
-// Schema declaration:
-db.version(1).stores({
-  backups: 'id++, accountDid, createdAt',
-  repos: 'cid, uploadCid, backupId, accountDid',
-  blobs: 'cid, backupId, accountDid',
-  commits: 'accountDid, commitRev'
-});
+function newDB (name: string = 'storacha-bluesky-backups') {
+  const db = new Dexie(name) as BackupsDB
 
-export default db
+  // Schema declaration:
+  db.version(1).stores({
+    backups: 'id++, accountDid, createdAt',
+    repos: 'cid, uploadCid, backupId, accountDid',
+    blobs: 'cid, backupId, accountDid',
+    commits: 'accountDid, commitRev'
+  })
+  return db
+}
+
+export default newDB()

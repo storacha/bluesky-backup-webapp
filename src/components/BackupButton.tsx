@@ -1,18 +1,19 @@
 'use client'
 
 import { useBskyAuthContext } from "@/contexts"
-import { backup, BackupMetadataStore } from "@/lib/bluesky"
+import { backup } from "@/lib/bluesky"
 import { Space, useW3 } from "@w3ui/react"
 import { useState } from "react"
 import { SpaceFinder } from "./SpaceFinder"
+import { BackupMetadataStore } from "@/lib/backupMetadataStore"
 
 export interface BackupButtonProps {
   backupMetadataStore: BackupMetadataStore
 }
 
 export default function BackupButton ({
-   backupMetadataStore,
-  }: BackupButtonProps) {
+  backupMetadataStore,
+}: BackupButtonProps) {
   const [isBackingUp, setIsBackingUp] = useState(false)
   const [selectedSpace, setSelectedSpace] = useState<Space>()
   const [storacha] = useW3()
@@ -77,17 +78,23 @@ export default function BackupButton ({
       </div>
     ) : (
       <div>
-        <p>Please choose the Storacha space where you&apos;d like to back up your Bluesky account:</p>
-        {storacha.spaces && (storacha.spaces.length > 0) && (
-          <SpaceFinder
-            selected={space} setSelected={setSelectedSpace} spaces={storacha.spaces}
-            className="w-52" />
+        {storacha.spaces && (storacha.spaces.length > 0) ? (
+          <div>
+            <p>Please choose the Storacha space where you&apos;d like to back up your Bluesky account:</p>
+            <SpaceFinder
+              selected={space} setSelected={setSelectedSpace} spaces={storacha.spaces}
+              className="w-52" />
+          </div>
+        ) : (
+          <div>You are logged in to Storacha, but we could not find any Storacha Spaces - please create one using the CLI or Storacha Web Console and then reload this page.</div>
         )}
-        <button
-          onClick={onClick} disabled={!space}
-          className="btn">
-          {space ? "Back It Up!" : "Please Pick a Space"}
-        </button>
+        {space && (
+          <button
+            onClick={onClick} disabled={!space}
+            className="btn">
+            Back It Up!
+          </button>
+        )}
       </div>
     )
   ) : (

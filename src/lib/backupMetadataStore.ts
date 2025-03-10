@@ -1,7 +1,18 @@
-import { BackupMetadataStore } from "@/lib/bluesky"
-import db from "./db"
+import db, { Backup, BackupsDB, Repo, Blob } from "./db"
 
-export const backupMetadataStore: BackupMetadataStore = {
+export interface BackupMetadataStore {
+    setLatestCommit: (accountDid: string, commitRev: string) => Promise<void>
+    addRepo: (cid: string, uploadCid: string, backupId: number, accountDid: string) => Promise<void>
+    addBlob: (cid: string, backupId: number, accountDid: string) => Promise<void>
+    addBackup: (accountDid: string) => Promise<number>
+    listBackups: () => Promise<Backup[]>
+    listRepos: (backupId: number) => Promise<Repo[]>
+    listBlobs: (backupId: number) => Promise<Blob[]>
+}
+
+type BackupMetadataStoreInitializer = (db: BackupsDB) => BackupMetadataStore
+
+export const newBackupMetadataStore: BackupMetadataStoreInitializer = (db) => ({
   async setLatestCommit (accountDid, commitRev) {
     await db.commits.put({ accountDid, commitRev })
   },
@@ -16,5 +27,13 @@ export const backupMetadataStore: BackupMetadataStore = {
   },
   async listBackups () {
     return db.backups.toArray()
+  },
+  async listRepos (backupId) {
+    return db.repos.where('backupId').equals(backupId).toArray()
+  },
+  async listBlobs (backupId) {
+    return db.blobs.where('backupId').equals(backupId).toArray()
   }
-}
+})
+
+export const backupMetadataStore: BackupMetadataStore = newBackupMetadataStore(db)
