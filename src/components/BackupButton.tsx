@@ -3,7 +3,7 @@
 import { useBskyAuthContext } from "@/contexts"
 import { backup, BackupMetadataStore } from "@/lib/bluesky"
 import { Space, useW3 } from "@w3ui/react"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { SpaceFinder } from "./SpaceFinder"
 import db from "@/app/db"
 import { useLocalPdsSession } from "@/lib/local-pds-session"
@@ -48,12 +48,11 @@ export default function BackupButton () {
       console.log('not backing up, profile, agent, client:', bluesky.userProfile, bluesky.agent, storacha.client)
     }
   }
-useEffect(() => {
-  // setLocalSession()
-}, [])
   // if there are no existing spaces, create a default one
   const createDefaultSpace = () => storacha.client?.createSpace("Space 1", { account: storacha.accounts?.[0] })
-  const userAuthenticatedToBothServices = (bluesky.userProfile || session?.pdSession) && (storacha.accounts.length > 0)
+  const userAuthenticatedToBothServices =
+    (bluesky.userProfile || session?.pdSession) &&
+    (storacha.accounts?.length > 0)
   const [backupProgressComponent, setBackupProgressComponent] = useState(
     <>
       Backing up your Bluesky account...

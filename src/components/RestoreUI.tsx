@@ -145,7 +145,6 @@ export default function RestoreButton ({ backupId }: { backupId: string }) {
       const recoveryKey = await Secp256k1Keypair.create({ exportable: true });
       const privateKeyBytes = await recoveryKey.export()
       const privateKey = ui8.toString(privateKeyBytes, "hex")
-      setFinalRecoveryKey(privateKey)
 
       const credentials = await sinkAgent.com.atproto.identity.getRecommendedDidCredentials();
       const rotationKeys = credentials.data.rotationKeys ?? []
@@ -161,15 +160,17 @@ export default function RestoreButton ({ backupId }: { backupId: string }) {
         `❗ Your private recovery key is: ${privateKey}. Please store this in a secure location! ❗`,
       )
 
-      await sinkAgent.com.atproto.identity.submitPlcOperation({
+     const submitPlcOp = await sinkAgent.com.atproto.identity.submitPlcOperation({
         operation: plcOp.data.operation
       })
       await sinkAgent.com.atproto.server.activateAccount()
+      if (submitPlcOp.success){
+        setFinalRecoveryKey(privateKey)
+      }
     } catch (error) {
-      console.error(`Restor failed: ${(error as Error).message}`)
+      console.error(`Restore failed: ${(error as Error).message}`)
       alert(`Restore failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
-
   }
   return (
     <div>
