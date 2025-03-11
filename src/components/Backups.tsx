@@ -53,9 +53,9 @@ export function Backups ({ className = '' }: { className?: string }) {
   )
 }
 
-export function Repos ({ backupId, className = '' }: { backupId: string, className?: string }) {
+export function Repos ({ backupId, className = '' }: { backupId: number, className?: string }) {
   const { backupsStore } = useBackupsContext()
-  const repos = useLiveQuery<Repo[]>(() => backupsStore.listRepos(parseInt(backupId)))
+  const repos = useLiveQuery<Repo[]>(() => backupsStore.listRepos(backupId))
   return (
     <div className={className}>
       <h2 className="text-sm font-mono font-bold uppercase mb-2">Repos</h2>
@@ -99,9 +99,9 @@ export function Repos ({ backupId, className = '' }: { backupId: string, classNa
   )
 }
 
-export function Blobs ({ backupId, className = '' }: { backupId: string, className?: string }) {
+export function Blobs ({ backupId, className = '' }: { backupId: number, className?: string }) {
   const { backupsStore } = useBackupsContext()
-  const blobs = useLiveQuery<Blob[]>(() => backupsStore.listBlobs(parseInt(backupId)))
+  const blobs = useLiveQuery<Blob[]>(() => backupsStore.listBlobs(backupId))
   return (
     <div className={className}>
       <h2 className="text-sm font-mono font-bold uppercase mb-2">Blobs</h2>
