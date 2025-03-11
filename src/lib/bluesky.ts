@@ -3,7 +3,7 @@ import { ProfileViewBasic } from "@atproto/api/dist/client/types/app/bsky/actor/
 import { OAuthClientMetadataInput } from "@atproto/oauth-client-browser";
 import { CARLink, Client } from "@w3ui/react";
 
-export const blueskyClientUri = process.env.NEXT_PUBLIC_BLUESKY_CLIENT_URI || "https://localhost:3000/"
+export const blueskyClientUri = process.env.NEXT_PUBLIC_BLUESKY_CLIENT_URI! || "https://localhost:3000/"
 
 export const blueskyClientMetadata: OAuthClientMetadataInput = {
     "client_id": `${blueskyClientUri}bluesky-client-metadata`,

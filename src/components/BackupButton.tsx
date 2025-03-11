@@ -3,9 +3,10 @@
 import { useBskyAuthContext } from "@/contexts"
 import { backup, BackupMetadataStore } from "@/lib/bluesky"
 import { Space, useW3 } from "@w3ui/react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { SpaceFinder } from "./SpaceFinder"
 import db from "@/app/db"
+import { useLocalPdsSession } from "@/lib/local-pds-session"
 
 const backupMetadataStore: BackupMetadataStore = {
   async setLatestCommit (accountDid, commitRev) {
@@ -27,6 +28,7 @@ export interface BackupButtonProps {
 }
 
 export default function BackupButton () {
+  const { session } = useLocalPdsSession();
   const [isBackingUp, setIsBackingUp] = useState(false)
   const [selectedSpace, setSelectedSpace] = useState<Space>()
   const [storacha] = useW3()
@@ -34,17 +36,24 @@ export default function BackupButton () {
   const backupEvents = new EventTarget()
   const space = selectedSpace ?? storacha?.spaces[0]
   async function onClick () {
-    if (space && bluesky.userProfile && bluesky.agent && storacha.client) {
+    if (space && (bluesky.userProfile || session) && (bluesky.agent || session?.pdAgent) && storacha.client) {
       await storacha.client.setCurrentSpace(space.did())
 
       setIsBackingUp(true)
-      await backup(bluesky.userProfile, bluesky.agent, storacha.client, backupMetadataStore, { eventTarget: backupEvents })
+      // Passing session.pdSession.session is wrong here. I know. I don't think AtpSessionData/CredentialSession provides a profile obj
+      // await backup((bluesky.userProfile || session?.pdSession?.session), bluesky.agent || session?.pdAgent, storacha.client, backupMetadataStore, { eventTarget: backupEvents })
+      await backup((bluesky?.userProfile), bluesky.agent || session?.pdAgent, storacha.client, backupMetadataStore, { eventTarget: backupEvents })
       setIsBackingUp(false)
     } else {
       console.log('not backing up, profile, agent, client:', bluesky.userProfile, bluesky.agent, storacha.client)
     }
   }
-  const userAuthenticatedToBothServices = bluesky.userProfile && (storacha.accounts.length > 0)
+useEffect(() => {
+  // setLocalSession()
+}, [])
+  // if there are no existing spaces, create a default one
+  const createDefaultSpace = () => storacha.client?.createSpace("Space 1", { account: storacha.accounts?.[0] })
+  const userAuthenticatedToBothServices = (bluesky.userProfile || session?.pdSession) && (storacha.accounts.length > 0)
   const [backupProgressComponent, setBackupProgressComponent] = useState(
     <>
       Backing up your Bluesky account...
@@ -97,11 +106,19 @@ export default function BackupButton () {
             selected={space} setSelected={setSelectedSpace} spaces={storacha.spaces}
             className="w-52" />
         )}
-        <button
-          onClick={onClick} disabled={!space}
-          className="btn">
-          {space ? "Back It Up!" : "Please Pick a Space"}
-        </button>
+        {storacha.spaces.length === 0 ? (
+          <button
+            onClick={() => createDefaultSpace()}
+            className="btn">
+              create Space
+          </button>
+        ) : (
+          <button
+            onClick={onClick} disabled={!space}
+            className="btn">
+              {space ? "Back It Up!" : "Please Pick a Space"}
+          </button>
+        )}
       </div>
     )
   ) : (

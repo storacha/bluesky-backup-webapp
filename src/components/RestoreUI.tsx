@@ -11,7 +11,7 @@ import { useForm } from "react-hook-form"
 import { Secp256k1Keypair } from "@atproto/crypto"
 import * as ui8 from "uint8arrays"
 
-type LoginFn = (identifier: string, password: string, options?: { server?: string }) => Promise<void>
+export type LoginFn = (identifier: string, password: string, options?: { server?: string }) => Promise<void>
 
 interface LoginForm {
   handle: string
@@ -213,7 +213,7 @@ export default function RestoreButton ({ backupId }: { backupId: string }) {
                   type="text"
                   value={plcToken}
                   placeholder="Please enter token from email"
-                  className="ipt w-full"
+                  className="ipt w-100"
                   onChange={(e: ChangeEvent<HTMLInputElement>) => setPlcToken(e.target.value)}
                 />
                 <button onClick={restore} className="btn">
@@ -249,7 +249,7 @@ export default function RestoreButton ({ backupId }: { backupId: string }) {
   )
 }
 
-function AtprotoLoginForm ({ login, defaultServer }: AtprotoLoginFormProps) {
+export function AtprotoLoginForm ({ login, defaultServer }: AtprotoLoginFormProps) {
   const {
     register,
     handleSubmit,

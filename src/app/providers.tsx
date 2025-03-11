@@ -8,7 +8,7 @@ const BskyAuthProvider = dynamic(() => import('../components/BlueskyAuthProvider
   ssr: false
 })
 
-const W3UIProvider = dynamic(() => import('../components/W3UIProvider'), {
+const StorachaProvider = dynamic(() => import('../components/StorachaProvider'), {
   loading: () => <p>Loading...</p>,
   ssr: false
 })
@@ -34,9 +34,9 @@ export default function RootProviders({
   return (
     <QueryClientProvider client={queryClient}>
       <BskyAuthProvider>
-        <W3UIProvider>
+        <StorachaProvider>
           {children}
-        </W3UIProvider>
+        </StorachaProvider>
       </BskyAuthProvider>
     </QueryClientProvider>
   );
