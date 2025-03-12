@@ -20,11 +20,14 @@ export type BskyAuthContextProps = {
   userProfile?: ProfileViewBasic;
   bskyAuthClient?: BrowserOAuthClient;
   agent?: Agent;
+  serviceResolver?: string;
+  setServiceResolver: (url: string) => void;
 };
 
 export const BskyAuthContext = createContext<BskyAuthContextProps>({
   initialized: false,
   authenticated: false,
+  setServiceResolver: () => {}
 });
 
 export const useBskyAuthContext = () => {

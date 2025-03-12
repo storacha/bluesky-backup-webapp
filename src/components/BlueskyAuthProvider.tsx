@@ -25,6 +25,7 @@ export const BskyAuthProvider = ({ children }: Props) => {
   const [session, setSession] = useState<OAuthSession>();
   const [state, setState] = useState<string>();
   const [initialized, setInitialized] = useState(false)
+  const [serviceResolver, setServiceResolver] = useState<string>("https://bsky.social");
 
   const bskyAgent = useMemo(() => {
     if (!authenticated || !session) return;
@@ -32,7 +33,7 @@ export const BskyAuthProvider = ({ children }: Props) => {
   }, [authenticated, session]);
 
   const { data: userProfile } = useQuery({
-    queryKey: ["bsky", "profile"],
+    queryKey: ["bsky", "profile", session?.did],
     queryFn: async () => {
       if (!authenticated || !bskyAgent || !bskyAgent.did) return;
       const result = (await bskyAgent.getProfile({ actor: bskyAgent.did }))
@@ -44,14 +45,9 @@ export const BskyAuthProvider = ({ children }: Props) => {
 
   useEffect(() => {
     const initBsky = async () => {
-      const bskyAuthClient = new BrowserOAuthClient({
-        clientMetadata: blueskyClientMetadata,
-        handleResolver: "https://bsky.social",
-      });
-      setBskyAuthClient(bskyAuthClient);
+      if (!bskyAuthClient) return;
 
       const result = await bskyAuthClient.init(true);
-
       if (result) {
         const { session, state } = result as {
           session: OAuthSession;
@@ -76,20 +72,34 @@ export const BskyAuthProvider = ({ children }: Props) => {
     };
 
     initBsky();
-  }, []);
+  }, [bskyAuthClient]);
+
+  // for the custom resolver... another effect that runs when we use a PDS
+  useEffect(() => {
+    const client = new BrowserOAuthClient({
+      clientMetadata: blueskyClientMetadata,
+      handleResolver: serviceResolver,
+    })
+    setBskyAuthClient(client)
+  }, [serviceResolver])
+
+  const values = {
+    state,
+    session,
+    userProfile,
+    initialized,
+    authenticated,
+    bskyAuthClient,
+    agent: bskyAgent,
+    serviceResolver,
+    setServiceResolver: (url: string) => {
+      setServiceResolver(url);
+      setInitialized(false)
+    }
+  }
 
   return (
-    <BskyAuthContext.Provider
-      value={{
-        initialized,
-        authenticated,
-        session,
-        state,
-        userProfile,
-        bskyAuthClient,
-        agent: bskyAgent
-      }}
-    >
+    <BskyAuthContext.Provider value={values}>
       {children}
     </BskyAuthContext.Provider>
   );
