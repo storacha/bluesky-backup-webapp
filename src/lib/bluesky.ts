@@ -51,6 +51,22 @@ export async function backup (profile: ProfileViewBasic, agent: Agent, storachaC
         console.warn("Uploaded CAR but did not find a CID, this is very surprising and your backup cannot be recorded!")
     }
 
+    eventTarget?.dispatchEvent(new CustomEvent('prefs:fetching', { detail: { did: accountDid } }))
+    const prefs = await agent.app.bsky.actor.getPreferences()
+
+    eventTarget?.dispatchEvent(new CustomEvent('prefs:uploading'))
+    const blob = new Blob([JSON.stringify(prefs.data)], { type: "application/json" })
+
+    const storachaPrefsUploadCid = await storachaClient.uploadFile(
+        new File([blob], 'preferences.json')
+    )
+    eventTarget?.dispatchEvent(new CustomEvent('prefs:uploaded', { detail: { cid: storachaPrefsUploadCid } }))
+    
+    await metadataStore.addPrefsDoc(storachaPrefsUploadCid.toString(), backupId, accountDid)
+
+    
+
+
     let blobCursor: string | undefined = undefined
 
     do {
@@ -76,8 +92,7 @@ export async function backup (profile: ProfileViewBasic, agent: Agent, storachaC
             eventTarget?.dispatchEvent(new CustomEvent('blob:uploading', { detail: { cid, i, count: listedBlobs.data.cids.length } }))
             const storachaBlobCid = await storachaClient.uploadFile(new Blob([blobRes.data]))
             eventTarget?.dispatchEvent(new CustomEvent('blob:uploaded', { detail: { cid: storachaBlobCid, i, count: listedBlobs.data.cids.length } }))
-
-            await metadataStore.addBlob(storachaBlobCid.toString(), backupId, accountDid)
+            await metadataStore.addBlob(storachaBlobCid.toString(), backupId, accountDid, {contentType: blobRes.headers['content-type']})
             i++
         }
 
