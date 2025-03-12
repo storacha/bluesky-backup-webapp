@@ -1,6 +1,5 @@
 "use client";
 import { useBskyAuthContext } from "@/contexts";
-import { REQUIRED_ATPROTO_SCOPE } from "@/lib/constants";
 import { useCallback, useState, useMemo } from "react";
 
 export default function BlueskyAuthenticator() {
@@ -11,6 +10,7 @@ export default function BlueskyAuthenticator() {
     serviceResolver,
     userProfile,
     session,
+    login,
     setServiceResolver
   } = useBskyAuthContext();
 
@@ -28,13 +28,11 @@ export default function BlueskyAuthenticator() {
   const signIn = useCallback(async () => {
     if (!bskyAuthClient) return;
     try {
-      await bskyAuthClient.signIn(handle, {
-        scope: REQUIRED_ATPROTO_SCOPE,
-      });
+      await login(handle)
     } catch (err) {
       console.log(err);
     }
-  }, [handle, bskyAuthClient]);
+  }, [handle, bskyAuthClient, login]);
 
   const handleCustomPds = () => {
     if (customPdsInput) {

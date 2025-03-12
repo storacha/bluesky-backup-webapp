@@ -13,7 +13,7 @@ export const blueskyClientMetadata: OAuthClientMetadataInput = {
     "application_type": "web",
     "grant_types": ["authorization_code", "refresh_token"],
     "response_types": ["code"],
-    "redirect_uris": [blueskyClientUri],
+    "redirect_uris": [`${blueskyClientUri}/auth/callback`],
     "token_endpoint_auth_method": "none",
     "scope": "atproto transition:generic",
     "dpop_bound_access_tokens": true

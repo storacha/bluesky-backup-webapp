@@ -31,7 +31,7 @@ export default function BackupButton ({
       console.log('not backing up, profile, agent, client:', bluesky.userProfile, bluesky.agent, storacha.client)
     }
   }
-  const userAuthenticatedToBothServices = bluesky.userProfile && storacha.accounts[0]
+  const userAuthenticatedToBothServices = (bluesky.userProfile || bluesky.session) && storacha.accounts[0]
   const [backupProgressComponent, setBackupProgressComponent] = useState(
     <>
       Backing up your Bluesky account...

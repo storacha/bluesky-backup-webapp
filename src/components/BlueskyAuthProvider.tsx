@@ -2,6 +2,7 @@
 
 import { BskyAuthContext } from "@/contexts";
 import { blueskyClientMetadata } from "@/lib/bluesky";
+import { REQUIRED_ATPROTO_SCOPE } from "@/lib/constants";
 import { Agent } from "@atproto/api";
 import {
   OAuthSession,
@@ -23,7 +24,7 @@ export const BskyAuthProvider = ({ children }: Props) => {
   const [authenticated, setAuthenticated] = useState<boolean>(false);
   const [bskyAuthClient, setBskyAuthClient] = useState<BrowserOAuthClient>();
   const [session, setSession] = useState<OAuthSession>();
-  const [state, setState] = useState<string>();
+  const [state, setState] = useState<string | null>(null);
   const [initialized, setInitialized] = useState(false)
   const [serviceResolver, setServiceResolver] = useState<string>("https://bsky.social");
 
@@ -83,6 +84,29 @@ export const BskyAuthProvider = ({ children }: Props) => {
     setBskyAuthClient(client)
   }, [serviceResolver])
 
+  const login = async (handle: string) => {
+    if (!bskyAuthClient) return;
+    try {
+      await bskyAuthClient.signIn(handle, {
+        scope: REQUIRED_ATPROTO_SCOPE
+      });
+    } catch (error) {
+      console.error("Login error:", error);
+    }
+  };
+
+  const logout = async () => {
+    if (!bskyAuthClient) return;
+    try {
+      bskyAuthClient.dispose()
+      setAuthenticated(false);
+      setSession(undefined);
+      setState(null);
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
+
   const values = {
     state,
     session,
@@ -92,6 +116,11 @@ export const BskyAuthProvider = ({ children }: Props) => {
     bskyAuthClient,
     agent: bskyAgent,
     serviceResolver,
+    setAuthenticated,
+    setSession,
+    setState,
+    login,
+    logout,
     setServiceResolver: (url: string) => {
       setServiceResolver(url);
       setInitialized(false)
@@ -105,4 +134,4 @@ export const BskyAuthProvider = ({ children }: Props) => {
   );
 };
 
-export default BskyAuthProvider
+export default BskyAuthProvider;

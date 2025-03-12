@@ -16,18 +16,28 @@ export type BskyAuthContextProps = {
   initialized: boolean;
   authenticated: boolean;
   session?: OAuthSession;
-  state?: string;
+  state?: string | null;
   userProfile?: ProfileViewBasic;
   bskyAuthClient?: BrowserOAuthClient;
   agent?: Agent;
   serviceResolver?: string;
   setServiceResolver: (url: string) => void;
+  setAuthenticated: (value: boolean) => void;
+  setSession: (session?: OAuthSession) => void;
+  setState: (state: string | null) => void;
+  login: (handle: string) => Promise<void>;
+  logout: () => Promise<void>;
 };
 
 export const BskyAuthContext = createContext<BskyAuthContextProps>({
+  login: async () => {},
+  logout: async () => {},
   initialized: false,
   authenticated: false,
-  setServiceResolver: () => {}
+  setServiceResolver: () => {},
+  setState: () => {},
+  setSession: () => {},
+  setAuthenticated: () => {}
 });
 
 export const useBskyAuthContext = () => {
