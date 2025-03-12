@@ -4,7 +4,9 @@ import { OAuthClientMetadataInput } from "@atproto/oauth-client-browser";
 import { CARLink, Client } from "@w3ui/react";
 import { BackupMetadataStore } from "./backupMetadataStore";
 
-export const blueskyClientUri = process.env.NEXT_PUBLIC_BLUESKY_CLIENT_URI || "https://localhost:3000/"
+const  ensureTrailingSlash = (s: string) => s.endsWith('/') ? s : s.concat('/')
+
+export const blueskyClientUri = ensureTrailingSlash(process.env.NEXT_PUBLIC_BLUESKY_CLIENT_URI || "https://localhost:3000/")
 
 export const blueskyClientMetadata: OAuthClientMetadataInput = {
     "client_id": `${blueskyClientUri}bluesky-client-metadata`,
