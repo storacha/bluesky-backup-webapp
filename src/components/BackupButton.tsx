@@ -21,17 +21,17 @@ export default function BackupButton ({
   const backupEvents = new EventTarget()
   const space = selectedSpace ?? storacha?.spaces?.[0]
   async function onClick () {
-    if (space && (bluesky.userProfile || bluesky.session) && bluesky.agent && storacha.client) {
+    if (space && (bluesky.userProfile) && bluesky.agent && storacha.client) {
       await storacha.client.setCurrentSpace(space.did())
 
       setIsBackingUp(true)
-      await backup(bluesky?.userProfile || bluesky?.session, bluesky.agent, storacha.client, backupMetadataStore, { eventTarget: backupEvents })
+      await backup(bluesky?.userProfile, bluesky.agent, storacha.client, backupMetadataStore, { eventTarget: backupEvents })
       setIsBackingUp(false)
     } else {
       console.log('not backing up, profile, agent, client:', bluesky.userProfile, bluesky.agent, storacha.client)
     }
   }
-  const userAuthenticatedToBothServices = (bluesky.userProfile || bluesky.session) && storacha.accounts[0]
+  const userAuthenticatedToBothServices = (bluesky.userProfile) && storacha.accounts[0]
   const [backupProgressComponent, setBackupProgressComponent] = useState(
     <>
       Backing up your Bluesky account...
