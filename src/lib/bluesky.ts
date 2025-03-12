@@ -1,6 +1,6 @@
 import { Agent } from "@atproto/api";
 import { ProfileViewBasic } from "@atproto/api/dist/client/types/app/bsky/actor/defs";
-import { OAuthClientMetadataInput } from "@atproto/oauth-client-browser";
+import { OAuthClientMetadataInput, OAuthSession } from "@atproto/oauth-client-browser";
 import { CARLink, Client } from "@w3ui/react";
 import { BackupMetadataStore } from "./backupMetadataStore";
 
@@ -23,16 +23,16 @@ export interface BackupOptions {
     eventTarget?: EventTarget
 }
 
-export async function backup (profile: ProfileViewBasic, agent: Agent, storachaClient: Client, metadataStore: BackupMetadataStore, { eventTarget }: BackupOptions = {}) {
-    const accountDid = profile.did
-    const backupId = await metadataStore.addBackup(accountDid)
+export async function backup (profile: ProfileViewBasic | OAuthSession | undefined, agent: Agent, storachaClient: Client, metadataStore: BackupMetadataStore, { eventTarget }: BackupOptions = {}) {
+    const accountDid = profile?.did
+    const backupId = await metadataStore.addBackup(String(profile?.did))
 
-    const commitResp = await agent.com.atproto.sync.getLatestCommit({ did: accountDid })
-    await metadataStore.setLatestCommit(accountDid, commitResp.data.rev)
+    const commitResp = await agent.com.atproto.sync.getLatestCommit({ did: String(accountDid) })
+    await metadataStore.setLatestCommit(String(accountDid), commitResp.data.rev)
 
     console.log("backing up repo")
     eventTarget?.dispatchEvent(new CustomEvent('repo:fetching', { detail: { did: accountDid } }))
-    const repoRes = await agent.com.atproto.sync.getRepo({ did: accountDid })
+    const repoRes = await agent.com.atproto.sync.getRepo({ did: String(accountDid) })
     console.log("got repo with headers", repoRes.headers)
 
     eventTarget?.dispatchEvent(new CustomEvent('repo:uploading'))
@@ -46,7 +46,7 @@ export async function backup (profile: ProfileViewBasic, agent: Agent, storachaC
     })
     eventTarget?.dispatchEvent(new CustomEvent('repo:uploaded', { detail: { cid: storachaRepoCid } }))
     if (storachaRepoCid) {
-        await metadataStore.addRepo(storachaRepoCid.toString(), storachaUploadCid.toString(), backupId, accountDid)
+        await metadataStore.addRepo(storachaRepoCid.toString(), storachaUploadCid.toString(), backupId, String(accountDid))
     } else {
         console.warn("Uploaded CAR but did not find a CID, this is very surprising and your backup cannot be recorded!")
     }
@@ -57,7 +57,7 @@ export async function backup (profile: ProfileViewBasic, agent: Agent, storachaC
         eventTarget?.dispatchEvent(new CustomEvent('blobs:listing'))
 
         const listedBlobs = await agent.com.atproto.sync.listBlobs({
-            did: accountDid,
+            did: String(accountDid),
             cursor: blobCursor,
         })
         eventTarget?.dispatchEvent(new CustomEvent('blobs:listed', { detail: { count: listedBlobs.data.cids.length } }))
@@ -69,7 +69,7 @@ export async function backup (profile: ProfileViewBasic, agent: Agent, storachaC
             eventTarget?.dispatchEvent(new CustomEvent('blob:fetching', { detail: { cid, i, count: listedBlobs.data.cids.length } }))
 
             const blobRes = await agent.com.atproto.sync.getBlob({
-                did: accountDid,
+                did: String(accountDid),
                 cid,
             })
 
@@ -77,7 +77,7 @@ export async function backup (profile: ProfileViewBasic, agent: Agent, storachaC
             const storachaBlobCid = await storachaClient.uploadFile(new Blob([blobRes.data]))
             eventTarget?.dispatchEvent(new CustomEvent('blob:uploaded', { detail: { cid: storachaBlobCid, i, count: listedBlobs.data.cids.length } }))
 
-            await metadataStore.addBlob(storachaBlobCid.toString(), backupId, accountDid)
+            await metadataStore.addBlob(storachaBlobCid.toString(), backupId, String(accountDid))
             i++
         }
 

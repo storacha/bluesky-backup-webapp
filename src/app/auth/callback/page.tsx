@@ -5,7 +5,7 @@ import { useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 
 export default function OAuthCallback() {
-  const { bskyAuthClient, setAuthenticated, setSession, setState } = useBskyAuthContext()
+  const { bskyAuthClient, setAuthenticated, session, setSession, authenticated, setState } = useBskyAuthContext()
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -21,14 +21,15 @@ export default function OAuthCallback() {
           ? new URLSearchParams(hash)
           : new URLSearchParams(searchParams.toString())
 
-        console.log("params", params)
-
         if (!params.has('code') || !params.has('state')) {
           console.error("Missing required parameters in callback URL", params.toString())
           throw new Error("Missing required OAuth parameters")
         }
 
         const result = await bskyAuthClient.callback(params)
+        if (!result) {
+          setError("Authentication failed. Please try again.")
+        }
 
         console.log(`${result.session.sub} was successfully authenticated (state: ${result.state})`)
         setAuthenticated(true)
@@ -37,7 +38,6 @@ export default function OAuthCallback() {
         router.push('/')
       } catch (error) {
         console.error("OAuth callback error:", error)
-        setError("Authentication failed. Please try again.")
       }
     }
 
@@ -45,7 +45,7 @@ export default function OAuthCallback() {
   }, [bskyAuthClient, router, searchParams, setAuthenticated, setSession, setState])
   return (
     <div className="flex justify-center items-center min-h-screen">
-      {error ? (
+      {(!session && !authenticated && error) ? (
         <div className="flex flex-col">
           <div className="text-red-500">{error}</div>
           <div className="flex justify-center">

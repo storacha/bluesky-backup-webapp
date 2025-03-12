@@ -21,11 +21,11 @@ export default function BackupButton ({
   const backupEvents = new EventTarget()
   const space = selectedSpace ?? storacha?.spaces?.[0]
   async function onClick () {
-    if (space && bluesky.userProfile && bluesky.agent && storacha.client) {
+    if (space && (bluesky.userProfile || bluesky.session) && bluesky.agent && storacha.client) {
       await storacha.client.setCurrentSpace(space.did())
 
       setIsBackingUp(true)
-      await backup(bluesky.userProfile, bluesky.agent, storacha.client, backupMetadataStore, { eventTarget: backupEvents })
+      await backup(bluesky?.userProfile || bluesky?.session, bluesky.agent, storacha.client, backupMetadataStore, { eventTarget: backupEvents })
       setIsBackingUp(false)
     } else {
       console.log('not backing up, profile, agent, client:', bluesky.userProfile, bluesky.agent, storacha.client)
