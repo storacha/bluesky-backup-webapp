@@ -20,11 +20,6 @@ NEXT_PUBLIC_BLUESKY_CLIENT_URI=https://c5a1-157-131-19-230.ngrok-free.app
 ```
 5. Visit your forwarding URL in the browser.
 6. (optional) You may want to set up a [static domain in ngrok](https://dashboard.ngrok.com/domains). If you've set up a static domain, you'll start ngrok like this (change out the URL for your static URL of course):
-```
-ngrok http http://localhost:3000 --url spicy-rooster-fondly.ngrok-free.app
-```
-
-If you get the `ERROR:  unknown flag: --url` error from the command above. Try using the `--domain` flag instead;
 
 ```shell
 ngrok http http://localhost:3000 --domain=spicy-rooster-fondly.ngrok-free.app
