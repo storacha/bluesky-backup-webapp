@@ -22,22 +22,14 @@ export type BskyAuthContextProps = {
   agent?: Agent;
   serviceResolver?: string;
   setServiceResolver: (url: string) => void;
-  setAuthenticated: (value: boolean) => void;
-  setSession: (session?: OAuthSession) => void;
-  setState: (state: string | null) => void;
   login: (handle: string) => Promise<void>;
-  logout: () => Promise<void>;
 };
 
 export const BskyAuthContext = createContext<BskyAuthContextProps>({
   login: async () => {},
-  logout: async () => {},
   initialized: false,
   authenticated: false,
   setServiceResolver: () => {},
-  setState: () => {},
-  setSession: () => {},
-  setAuthenticated: () => {}
 });
 
 export const useBskyAuthContext = () => {

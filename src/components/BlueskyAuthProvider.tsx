@@ -116,9 +116,6 @@ export const BskyAuthProvider = ({ children }: Props) => {
     bskyAuthClient,
     agent: bskyAgent,
     serviceResolver,
-    setAuthenticated,
-    setSession,
-    setState,
     login,
     logout,
     setServiceResolver: (url: string) => {

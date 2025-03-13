@@ -25,7 +25,7 @@ export interface BackupOptions {
 
 export async function backup (profile: ProfileViewBasic, agent: Agent, storachaClient: Client, metadataStore: BackupMetadataStore, { eventTarget }: BackupOptions = {}) {
     const accountDid = profile.did
-    const backupId = await metadataStore.addBackup(profile.did)
+    const backupId = await metadataStore.addBackup(accountDid)
 
     const commitResp = await agent.com.atproto.sync.getLatestCommit({ did: accountDid })
     await metadataStore.setLatestCommit(accountDid, commitResp.data.rev)
