@@ -424,7 +424,7 @@ export function RestoreDialogView ({
                       <h4 className="text-center uppercase text-xs font-bold">
                         {sourceSession?.pdsUrl?.hostname && shorten(sourceSession?.pdsUrl?.hostname, 10)}
                       </h4>
-                      <div className="text-xs w-full truncate">{sinkSession.did && shortenDID(sinkSession.did)}</div>
+                      <div className="text-xs w-full truncate">{sourceSession.did && shortenDID(sourceSession.did)}</div>
                     </div>
                     <div className="w-6 h-6">
                     </div>
