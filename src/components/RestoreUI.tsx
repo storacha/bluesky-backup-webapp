@@ -390,9 +390,21 @@ export function RestoreDialogView ({
                   <div className="flex flex-row items-center my-2 space-x-8">
 
                     <h5 className="font-bold uppercase text-sm text-right w-28">Preferences</h5>
-                    <div className="rounded-full hover:bg-white border w-8 h-8 flex flex-col justify-center items-center">
-                      <AdjustmentsHorizontalIcon className="w-4 h-4" />
-                    </div>
+                    <Popover className="relative">
+                      <PopoverButton className="outline-none">
+                        <div className="rounded-full hover:bg-white border w-8 h-8 flex flex-col justify-center items-center">
+                          <AdjustmentsHorizontalIcon className="w-4 h-4" />
+                        </div>
+                      </PopoverButton>
+                      <PopoverPanel anchor="bottom" className="flex flex-col bg-white border rounded p-2">
+                        <div>
+                          Account: {prefsDoc?.accountDid}
+                        </div>
+                        <div>
+                          Created At: {prefsDoc?.createdAt.toDateString()}
+                        </div>
+                      </PopoverPanel>
+                    </Popover>
                     {isRestoringPrefsDoc ? (
                       <Loader className="w-6 h-6" />
                     ) : (
