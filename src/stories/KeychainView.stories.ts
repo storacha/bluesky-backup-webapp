@@ -36,11 +36,6 @@ type Story = StoryObj<typeof meta>;
 
 export const Initial: Story = {};
 
-export const NewKey: Story = {
-  args: {
-  }
-};
-
 export const WithKeys: Story = {
   args: {
     keyPairs: [keyPair, publicOnlyKeyPair]
