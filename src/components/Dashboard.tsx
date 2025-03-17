@@ -1,18 +1,18 @@
 'use client'
 
-import React from 'react';
+import React from 'react'
 
-import { useBskyAuthContext } from '@/contexts';
-import { Loader } from '@/components/Loader';
-import StorachaAuthenticator from '@/components/StorachaAuthenticator';
-import BlueskyAuthenticator from '@/components/BlueskyAuthenticator';
-import { useW3 } from '@w3ui/react';
-import BackupUI from '@/components/BackupUI';
-import { useBackupsContext } from '@/contexts/backups';
-import { useLiveQuery } from 'dexie-react-hooks';
-import { Backups } from '@/components/Backups';
-import { usePlan } from '@/app/hooks';
-import StripePricingTable from '@/components/StripePricingTable';
+import { useBskyAuthContext } from '@/contexts'
+import { Loader } from '@/components/Loader'
+import StorachaAuthenticator from '@/components/StorachaAuthenticator'
+import BlueskyAuthenticator from '@/components/BlueskyAuthenticator'
+import { useW3 } from '@w3ui/react'
+import BackupUI from '@/components/BackupUI'
+import { useBackupsContext } from '@/contexts/backups'
+import { useLiveQuery } from 'dexie-react-hooks'
+import { Backups } from '@/components/Backups'
+import { usePlan } from '@/app/hooks'
+import StripePricingTable from '@/components/StripePricingTable'
 
 export const Dashboard = () => {
   const bluesky = useBskyAuthContext()
@@ -30,27 +30,32 @@ export const Dashboard = () => {
             storachaAccount ? (
               planIsLoading ? (
                 <Loader />
+              ) : plan ? (
+                <BackupUI />
               ) : (
-                plan ? (
-                  <BackupUI />
-                ) : (
-                  <div className="min-w-5xl">
-                    Sign up for a Storacha plan to continue!
-                    <StripePricingTable />
-                  </div>
-                )
+                <div className="min-w-5xl">
+                  Sign up for a Storacha plan to continue!
+                  <StripePricingTable />
+                </div>
               )
             ) : (
               <div className="flex flex-col items-center">
-                <h4 className="mb-4 font-bold">Next, please log in to your Storacha account:</h4>
+                <h4 className="mb-4 font-bold">
+                  Next, please log in to your Storacha account:
+                </h4>
                 <StorachaAuthenticator />
               </div>
             )
           ) : (
             <div>
-              <h3 className="text-2xl font-bold mb-16">Welcome to <span className="text-storacha-red">HOT</span> Bluesky Backups by Storacha!</h3>
+              <h3 className="text-2xl font-bold mb-16">
+                Welcome to <span className="text-storacha-red">HOT</span>{' '}
+                Bluesky Backups by Storacha!
+              </h3>
               <div className="flex flex-col items-center">
-                <h4 className="mb-4 font-bold">To get started, please log in to your Bluesky account:</h4>
+                <h4 className="mb-4 font-bold">
+                  To get started, please log in to your Bluesky account:
+                </h4>
                 <BlueskyAuthenticator />
               </div>
             </div>
@@ -61,14 +66,16 @@ export const Dashboard = () => {
       </div>
       <div className="w-full bg-white/80 backdrop-blur-3xl p-16 rounded border border-bluesky-blue">
         <h2 className="font-mono font-bold uppercase mb-2">Backups</h2>
-        {backups ? (backups.length > 0 ? (
-          <Backups />
+        {backups ? (
+          backups.length > 0 ? (
+            <Backups />
+          ) : (
+            <span>You have not yet created any backups.</span>
+          )
         ) : (
-          <span>You have not yet created any backups.</span>
-        )) : (
           <Loader />
         )}
       </div>
     </div>
   )
-};
+}

@@ -1,8 +1,7 @@
-
-export interface ButtonProps extends React.ComponentPropsWithoutRef<"button"> {
-  specialProp?: string;
+export interface ButtonProps extends React.ComponentPropsWithoutRef<'button'> {
+  specialProp?: string
 }
 
-export default function Button (props: ButtonProps) {
-  <button className='btn' {...props} />
+export default function Button(props: ButtonProps) {
+  ;<button className="btn" {...props} />
 }
