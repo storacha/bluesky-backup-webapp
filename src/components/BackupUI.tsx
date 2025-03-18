@@ -210,7 +210,7 @@ export function BackupUIView ({
                     />
                     <p className="text-sm">Don&apos;t want to use this space?</p>
                     <p
-                      onClick={() => setIsOpen(true)}
+                      onClick={() => setIsModalOpen(true)}
                       className="underline text-sm hover:cursor-pointer"
                     >
                       Create a new one
