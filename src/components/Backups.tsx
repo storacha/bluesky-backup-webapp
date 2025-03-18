@@ -24,9 +24,6 @@ export function Backups ({ className = '' }: { className?: string }) {
               <th>
                 Created At
               </th>
-              <th>
-                Encrypted With
-              </th>
             </tr>
           </thead>
           <tbody>
@@ -129,6 +126,9 @@ export function Prefs ({ backupId, className = '' }: { backupId: number, classNa
               </th>
               <th>
                 Bluesky Account DID
+              </th>
+              <th>
+                Encrypted With
               </th>
             </tr>
           </thead>
