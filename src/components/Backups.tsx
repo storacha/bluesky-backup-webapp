@@ -4,6 +4,7 @@ import { useBackupsContext } from "@/contexts/backups"
 import { GATEWAY_HOST } from "@/lib/constants"
 import { shortenCID, shortenDID } from "@/lib/ui"
 import { useLiveQuery } from "dexie-react-hooks"
+import { Table, TableBody, TableCell, TableHeader, TableHeaderCell, TableRow } from "./Table"
 
 export function Backups ({ className = '' }: { className?: string }) {
   const { backupsStore } = useBackupsContext()
@@ -12,42 +13,36 @@ export function Backups ({ className = '' }: { className?: string }) {
   return (
     <div className={className}>
       <div className='p-2 bg-white/50 rounded-lg'>
-        <table className="table-auto w-full">
-          <thead className="text-left">
-            <tr>
-              <th>
-                Backup
-              </th>
-              <th>
-                Account DID
-              </th>
-              <th>
-                Created At
-              </th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHeaderCell>Backup</TableHeaderCell>
+              <TableHeaderCell>Account DID</TableHeaderCell>
+              <TableHeaderCell>Created At</TableHeaderCell>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {backups?.map((backup) => (
-              <tr key={backup.id} className="odd:bg-gray-100/80">
-                <td>
-                  <a href={`/backups/${backup.id}`}>
+              <TableRow key={backup.id}>
+                <TableCell>
+                  <a href={`/backups/${backup.id}`} className="text-[var(--color-bluesky-blue)] hover:underline">
                     {backup.id}
                   </a>
-                </td>
-                <td>
-                  <a href={`/backups/${backup.id}`}>
+                </TableCell>
+                <TableCell>
+                  <a href={`/backups/${backup.id}`} className="font-mono text-sm">
                     {shortenDID(backup.accountDid)}
                   </a>
-                </td>
-                <td>
+                </TableCell>
+                <TableCell>
                   <a href={`/backups/${backup.id}`}>
                     {backup.createdAt.toDateString()}
                   </a>
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     </div>
   )
@@ -60,46 +55,34 @@ export function Repo ({ backupId, className = '' }: { backupId: number, classNam
     <div className={className}>
       <h2 className="text-sm font-mono font-bold uppercase mb-2">Repos</h2>
       <div className='p-2 bg-white/50 rounded-lg'>
-        <table className="table-auto w-full">
-          <thead className="text-left">
-            <tr>
-              <th>
-                Upload CID
-              </th>
-              <th>
-                Repo CID
-              </th>
-              <th>
-                Bluesky Account DID
-              </th>
-              <th>
-                Commit
-              </th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHeaderCell>Upload CID</TableHeaderCell>
+              <TableHeaderCell>Repo CID</TableHeaderCell>
+              <TableHeaderCell>Bluesky Account DID</TableHeaderCell>
+              <TableHeaderCell>Commit</TableHeaderCell>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {repo && (
-              <tr key={repo.cid} className="odd:bg-gray-100/80">
-                <td>
-                  <a href={`${GATEWAY_HOST}/ipfs/${repo.uploadCid}`}>
+              <TableRow>
+                <TableCell>
+                  <a href={`${GATEWAY_HOST}/ipfs/${repo.uploadCid}`} className="font-mono text-sm">
                     {shortenCID(repo.uploadCid)}
                   </a>
-                </td>
-                <td>
-                  <a href={`${GATEWAY_HOST}/ipfs/${repo.cid}`}>
+                </TableCell>
+                <TableCell>
+                  <a href={`${GATEWAY_HOST}/ipfs/${repo.cid}`} className="font-mono text-sm">
                     {shortenCID(repo.cid)}
                   </a>
-                </td>
-                <td>
-                  {shortenDID(repo.accountDid)}
-                </td>
-                <td>
-                  {repo.commit}
-                </td>
-              </tr>
+                </TableCell>
+                <TableCell className="font-mono text-sm">{shortenDID(repo.accountDid)}</TableCell>
+                <TableCell>{repo.commit}</TableCell>
+              </TableRow>
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     </div>
   )
@@ -112,32 +95,26 @@ export function Prefs ({ backupId, className = '' }: { backupId: number, classNa
     <div className={className}>
       <h2 className="text-sm font-mono font-bold uppercase mb-2">Preferences</h2>
       <div className='p-2 bg-white/50 rounded-lg'>
-        <table className="table-auto w-full">
-          <thead className="text-left">
-            <tr>
-              <th>
-                CID
-              </th>
-              <th>
-                Bluesky Account DID
-              </th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHeaderCell>CID</TableHeaderCell>
+              <TableHeaderCell>Bluesky Account DID</TableHeaderCell>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {prefsDoc && (
-              <tr key={prefsDoc.cid} className="odd:bg-gray-100/80">
-                <td>
-                  <a href={`${GATEWAY_HOST}/ipfs/${prefsDoc.cid}`}>
+              <TableRow key={prefsDoc.cid}>
+                <TableCell>
+                  <a href={`${GATEWAY_HOST}/ipfs/${prefsDoc.cid}`} className="font-mono text-sm">
                     {shortenCID(prefsDoc.cid)}
                   </a>
-                </td>
-                <td>
-                  {shortenDID(prefsDoc.accountDid)}
-                </td>
-              </tr>
+                </TableCell>
+                <TableCell className="font-mono text-sm">{shortenDID(prefsDoc.accountDid)}</TableCell>
+              </TableRow>
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     </div>
   )
@@ -150,32 +127,26 @@ export function Blobs ({ backupId, className = '' }: { backupId: number, classNa
     <div className={className}>
       <h2 className="text-sm font-mono font-bold uppercase mb-2">Blobs</h2>
       <div className='p-2 bg-white/50 rounded-lg'>
-        <table className="table-auto w-full">
-          <thead className="text-left">
-            <tr>
-              <th>
-                CID
-              </th>
-              <th>
-                Bluesky Account DID
-              </th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHeaderCell>CID</TableHeaderCell>
+              <TableHeaderCell>Bluesky Account DID</TableHeaderCell>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {blobs?.map(blob => (
-              <tr key={blob.cid} className="odd:bg-gray-100/80">
-                <td>
-                  <a href={`${GATEWAY_HOST}/ipfs/${blob.cid}`}>
+              <TableRow key={blob.cid}>
+                <TableCell>
+                  <a href={`${GATEWAY_HOST}/ipfs/${blob.cid}`} className="font-mono text-sm">
                     {shortenCID(blob.cid)}
                   </a>
-                </td>
-                <td>
-                  {shortenDID(blob.accountDid)}
-                </td>
-              </tr>
+                </TableCell>
+                <TableCell className="font-mono text-sm">{shortenDID(blob.accountDid)}</TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     </div>
   )
