@@ -1,8 +1,8 @@
 // copied from console
 
-import type { Space } from "@w3ui/react";
+import type { Space } from '@w3ui/react'
 
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useState } from 'react'
 import {
   Combobox,
   ComboboxButton,
@@ -10,33 +10,33 @@ import {
   ComboboxOption,
   ComboboxOptions,
   Transition,
-} from "@headlessui/react";
-import { ChevronUpDownIcon } from "@heroicons/react/20/solid";
-import { shortenDID } from "@/lib/ui";
+} from '@headlessui/react'
+import { ChevronUpDownIcon } from '@heroicons/react/20/solid'
+import { shortenDID } from '@/lib/ui'
 
 interface SpaceFinderProps {
-  spaces: Space[];
-  selected?: Space;
-  setSelected?: (space: Space) => void;
-  className?: string;
+  spaces: Space[]
+  selected?: Space
+  setSelected?: (space: Space) => void
+  className?: string
 }
 
 export function SpaceFinder({
   spaces,
   selected,
   setSelected,
-  className = "",
+  className = '',
 }: SpaceFinderProps): JSX.Element {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState('')
   const filtered =
-    query === ""
+    query === ''
       ? spaces
       : spaces.filter((space: Space) =>
           (space.name || space.did())
             .toLowerCase()
-            .replace(/\s+/g, "")
-            .includes(query.toLowerCase().replace(/\s+/g, ""))
-        );
+            .replace(/\s+/g, '')
+            .includes(query.toLowerCase().replace(/\s+/g, ''))
+        )
 
   return (
     <div className={`${className}`}>
@@ -53,7 +53,7 @@ export function SpaceFinder({
                 space.name || shortenDID(space.did())
               }
               onChange={(event) => {
-                setQuery(event.target.value);
+                setQuery(event.target.value)
               }}
             />
             <ComboboxButton className="absolute inset-y-0 right-0 flex items-center pl-1 pr-2">
@@ -69,14 +69,14 @@ export function SpaceFinder({
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
             afterLeave={() => {
-              setQuery("");
+              setQuery('')
             }}
           >
             <ComboboxOptions
               className="absolute mt-1 max-h-96 w-full bg-white rounded-md pt-1 shadow-lg overflow-scroll z-10"
               static
             >
-              {filtered.length === 0 && query !== "" ? (
+              {filtered.length === 0 && query !== '' ? (
                 <div className="relative select-non py-2 px-4 font-mono text-sm text-red-500">
                   (╯°□°)╯︵ ┻━┻
                 </div>
@@ -87,8 +87,8 @@ export function SpaceFinder({
                     className={({ focus }) =>
                       `relative select-none py-2 pl-9 pr-4 ${
                         focus
-                          ? "bg-hot-yellow-light cursor-pointer text-hot-red"
-                          : "text-black"
+                          ? 'bg-hot-yellow-light cursor-pointer text-hot-red'
+                          : 'text-black'
                       }`
                     }
                     value={space}
@@ -97,7 +97,7 @@ export function SpaceFinder({
                       <>
                         <span
                           className={`block overflow-hidden text-ellipsis whitespace-nowrap ${
-                            selected ? "font-medium" : ""
+                            selected ? 'font-medium' : ''
                           }`}
                         >
                           {space.name || shortenDID(space.did())}
@@ -105,7 +105,7 @@ export function SpaceFinder({
                         {selected ? (
                           <span
                             className={`absolute inset-y-0 left-0 flex items-center pl-3 ${
-                              focus ? "" : ""
+                              focus ? '' : ''
                             }`}
                           >
                             ⁂
@@ -121,5 +121,5 @@ export function SpaceFinder({
         </div>
       </Combobox>
     </div>
-  );
+  )
 }
