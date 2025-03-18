@@ -340,7 +340,7 @@ export function BackupUIView ({
         <div>Please authenticate to both Bluesky and Storacha to continue.</div>
       )}
       {isModalOpen && (
-        <CreateSpaceModal account={storacha.accounts?.[0]} isOpen={isModalOpen} onClose={() => setIsOpen(false)} />
+        <CreateSpaceModal account={storacha.accounts?.[0]} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
       )}
     </>
   )
