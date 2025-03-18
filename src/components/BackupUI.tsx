@@ -322,7 +322,7 @@ export function BackupUIView ({
                   You are logged in to Storacha, but we could not find any Storacha Spaces. Click the button below to create one.
                 </p>
                 <button
-                  onClick={() => setIsOpen(true)}
+                  onClick={() => setIsModalOpen(true)}
                   className="hover:cursor-pointer w-40 h-10 rounded-3xl bg-red-600 text-white hover:bg-red-700 transition-colors"
                 >
                   Create new Space
