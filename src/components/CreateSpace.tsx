@@ -4,6 +4,7 @@ import * as Storacha from "@web3-storage/w3up-client/account"
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import * as StorachaSpace from "@web3-storage/w3up-client/space"
+import {shorten} from "@/lib/ui"
 
 type SpaceCreationState = "idle" | "creating-space" | "creating-delegation"
 
@@ -97,7 +98,7 @@ export const CreateSpace = ({ account, onSuccess }: CreateSpaceProps) => {
               <div className="flex items-center justify-center gap-2 w-full">
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin flex-shrink-0"></div>
                 <span className="truncate text-center text-sm transition-transform duration-300">
-                  Creating {spaceName.slice(0, 20)}{spaceName.length > 20 && "..."}...
+                  Creating {shorten(spaceName, 12)}.
                 </span>
               </div>
             ) : "Create Space"}
