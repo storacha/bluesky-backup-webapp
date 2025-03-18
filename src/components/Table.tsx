@@ -6,11 +6,11 @@ interface TableProps extends React.HTMLAttributes<HTMLTableElement> {
   variant?: 'simple' | 'striped';
 }
 
-interface TableHeaderProps extends React.HTMLAttributes<HTMLTableSectionElement> {}
-interface TableBodyProps extends React.HTMLAttributes<HTMLTableSectionElement> {}
-interface TableRowProps extends React.HTMLAttributes<HTMLTableRowElement> {}
-interface TableCellProps extends React.TdHTMLAttributes<HTMLTableCellElement> {}
-interface TableHeaderCellProps extends React.ThHTMLAttributes<HTMLTableHeaderCellElement> {}
+type TableHeaderProps = React.HTMLAttributes<HTMLTableSectionElement>;
+type TableBodyProps = React.HTMLAttributes<HTMLTableSectionElement>;
+type TableRowProps = React.HTMLAttributes<HTMLTableRowElement>;
+type TableCellProps = React.TdHTMLAttributes<HTMLTableCellElement>;
+type TableHeaderCellProps = React.ThHTMLAttributes<HTMLTableHeaderCellElement>;
 
 const Table = React.forwardRef<HTMLTableElement, TableProps>(({
   className = '',
