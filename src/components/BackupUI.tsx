@@ -130,7 +130,7 @@ export function BackupUIView ({
   blobs,
   prefsDoc
 }: BackupUIViewProps) {
-  const [isModalOpen, setIsOpen] = useState<boolean>(false)
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
   const userAuthenticatedToBothServices = bluesky.userProfile && storacha.accounts[0]
   const [backupProgressComponent, setBackupProgressComponent] = useState(
     <>
