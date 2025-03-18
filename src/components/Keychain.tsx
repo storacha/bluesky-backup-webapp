@@ -1,22 +1,53 @@
 'use client'
 
-import { Cog8ToothIcon, PlusIcon } from "@heroicons/react/20/solid"
+import { Cog8ToothIcon, PlusIcon, TrashIcon } from "@heroicons/react/20/solid"
 import { useState } from "react"
-import { Loader } from "./Loader"
+import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react"
+import { useForm } from "react-hook-form"
 
 import { shortenDID } from "@/lib/ui"
 import { KeyPair } from "@/lib/crypto/keys"
 import { KeychainContextProps, useKeychainContext } from "@/contexts/keychain"
-import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react"
+import type { KeyImportFn } from "@/contexts/keychain"
+import { Loader } from "./Loader"
 import CopyButton from "./CopyButton"
+
+interface KeyImportFormParams {
+  keyMaterial: string
+}
+
+function KeyImportForm ({ importKey }: { importKey: KeyImportFn }) {
+  const {
+    register,
+    handleSubmit,
+  } = useForm<KeyImportFormParams>()
+  async function submit (data: KeyImportFormParams) {
+    await importKey(data.keyMaterial)
+  }
+  return (
+    <form onSubmit={handleSubmit(submit)}
+      className="flex flex-col space-y-2" >
+      <label>
+        <textarea
+          className="ipt w-full whitespace-pre"
+          {...register('keyMaterial')}
+          placeholder="JWK Formatted Key"
+        />
+      </label>
+      <input className="btn text-xs uppercase font-bold" type="submit" value="Confirm" />
+    </form >
+  )
+}
 
 interface KeyDetailsProps {
   keyPair: KeyPair
+  importKey?: KeyImportFn
   onDone?: () => unknown
 }
 
-function KeyDetails ({ keyPair, onDone }: KeyDetailsProps) {
+function KeyDetails ({ keyPair, onDone, importKey }: KeyDetailsProps) {
   const [secret, setSecret] = useState<string>()
+  const [showImport, setShowImport] = useState<boolean>(false)
 
   async function showSecret () {
     if (keyPair?.toSecret) {
@@ -28,33 +59,58 @@ function KeyDetails ({ keyPair, onDone }: KeyDetailsProps) {
   function hideSecret () {
     setSecret(undefined)
   }
+  async function importAndClose (keyMaterial: string) {
+    if (importKey) {
+      await importKey(keyMaterial)
+      setShowImport(false)
+    } else {
+      console.warn('importKey was not defined, cannot import key')
+    }
+
+  }
   return (
     <div className="flex flex-col space-y-4">
       <h3 className="font-bold text-xs uppercase">Key DID: {shortenDID(keyPair.did())}</h3>
-      {keyPair?.toSecret && (secret ? (
-        <div className="flex flex-col">
-          <div className="whitespace-pre w-96 h-24 font-mono text-xs overflow-scroll">{secret}</div>
-          <div className="flex flex-row space-x-2">
-            <button className="btn" onClick={hideSecret}>
-              Hide Secret
-            </button>
-            <div className="btn flex flex-col justify-center items-center">
-              <CopyButton text={secret} />
-            </div>
-          </div>
+      {(showImport && importKey) ? (
+        <div>
+          <KeyImportForm importKey={importAndClose} />
         </div>
       ) : (
-        <div>
-          <button className="btn" onClick={showSecret}>
-            Show Secret
-          </button>
-          {onDone && (
-            <button className="btn" onClick={onDone}>
-              Done
-            </button>
-          )}
-        </div>
-      ))}
+        secret ? (
+          <div className="flex flex-col">
+            <div className="whitespace-pre w-96 h-24 font-mono text-xs overflow-scroll">
+              {secret}
+            </div>
+            <div className="flex flex-row space-x-2">
+              <button className="btn" onClick={hideSecret}>
+                Hide Secret
+              </button>
+              <div className="btn flex flex-col justify-center items-center">
+                <CopyButton text={secret} />
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div>
+            {!keyPair.publicKey && (
+              <button className="btn" onClick={() => { setShowImport(true) }}>
+                Import Key
+              </button>
+            )}
+            {keyPair.privateKey && (
+              <button className="btn" onClick={showSecret}>
+                Show Secret
+              </button>
+            )}
+            {onDone && (
+              <button className="btn" onClick={onDone}>
+                Done
+              </button>
+            )}
+          </div>
+        )
+      )}
+
     </div>
   )
 }
@@ -67,6 +123,8 @@ export function KeychainView ({
   keyPairs = [],
   generateKeyPair,
   setSelectedKeyPair,
+  importKey,
+  forgetKey,
   className
 }: KeychainProps) {
   const [generatingKeyPair, setGeneratingKeyPair] = useState(false)
@@ -109,9 +167,13 @@ export function KeychainView ({
                       <Cog8ToothIcon className="w-4 h-4" />
                     </PopoverButton>
                     <PopoverPanel anchor="bottom" className="flex flex-col bg-white border rounded p-2">
-                      <KeyDetails keyPair={keyPair} />
+                      <KeyDetails keyPair={keyPair} importKey={importKey} />
                     </PopoverPanel>
                   </Popover>
+                  <button className="outline-none cursor-pointer hover:bg-gray-100 p-2" onClick={() => forgetKey(keyPair)}>
+                    <TrashIcon className="w-4 h-4" />
+                  </button>
+
                 </div>
               ))
             }

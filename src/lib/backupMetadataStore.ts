@@ -1,4 +1,4 @@
-import db, { Backup, BackupsDB, Repo, Blob, PrefsDoc } from "./db"
+import db, { Backup, BackupsDB, Repo, Blob, PrefsDoc, Key } from "./db"
 
 interface EncryptableOptions {
   encryptedWith?: string
@@ -16,10 +16,13 @@ export interface BackupMetadataStore {
   addPrefsDoc: (cid: string, backupId: number, accountDid: string, opts?: PrefsDocOptions) => Promise<void>
   addBlob: (cid: string, backupId: number, accountDid: string, opts?: BlobOptions) => Promise<void>
   addBackup: (accountDid: string) => Promise<number>
+  addKey: (id: string) => Promise<void>
   listBackups: () => Promise<Backup[]>
   getRepo: (backupId: number) => Promise<Repo | undefined>
   listBlobs: (backupId: number) => Promise<Blob[]>
   getPrefsDoc: (backupId: number) => Promise<PrefsDoc | undefined>
+  listKeys: () => Promise<Key[]>
+  deleteKey: (id: string) => Promise<unknown>
 }
 
 type BackupMetadataStoreInitializer = (db: BackupsDB) => BackupMetadataStore
@@ -37,6 +40,9 @@ export const newBackupMetadataStore: BackupMetadataStoreInitializer = (db) => ({
   async addBackup (accountDid) {
     return await db.backups.add({ accountDid, createdAt: new Date() })
   },
+  async addKey (id: string) {
+    await db.keys.put({ id })
+  },
   async listBackups () {
     return db.backups.toArray()
   },
@@ -48,6 +54,12 @@ export const newBackupMetadataStore: BackupMetadataStoreInitializer = (db) => ({
   },
   async getPrefsDoc (backupId) {
     return db.prefsDocs.where('backupId').equals(backupId).first()
+  },
+  async listKeys () {
+    return db.keys.toArray()
+  },
+  async deleteKey (id) {
+    await db.keys.delete(id)
   }
 })
 

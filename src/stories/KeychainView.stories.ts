@@ -25,7 +25,9 @@ const meta = {
   args: {
     keyPairs: [],
     generateKeyPair: async () => keyPair,
-    setSelectedKeyPair: fn()
+    setSelectedKeyPair: fn(),
+    importKey: fn(),
+    forgetKey: fn()
   },
   decorators: [
   ]

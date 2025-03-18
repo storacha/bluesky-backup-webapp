@@ -27,7 +27,7 @@ interface AtprotoLoginFormProps {
   defaultServer?: string
 }
 
-interface PlcTokenForm {
+interface PlcTokenFormParams {
   token: string
 }
 
@@ -208,7 +208,6 @@ export default function RestoreDialog ({ backupId }: { backupId: number }) {
   }
 
   async function restoreBlobs () {
-    console.log("RESTORING BLOPBS!")
     if (blobs && sinkAgent) {
       setIsRestoringBlobs(true)
       for (const blob of blobs) {
@@ -553,7 +552,7 @@ function PlcTokenForm ({ setPlcToken }: { setPlcToken: (token: string) => void }
   const {
     register,
     handleSubmit,
-  } = useForm<PlcTokenForm>()
+  } = useForm<PlcTokenFormParams>()
 
   return (
     <form onSubmit={handleSubmit((data) => setPlcToken(data.token))}

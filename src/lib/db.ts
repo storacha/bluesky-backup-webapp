@@ -34,6 +34,11 @@ export interface Blob {
   encryptedWith?: string;
 }
 
+export interface Key {
+  id: string
+  symkeyCid?: string
+}
+
 export type BackupsDB = Dexie & {
   backups: EntityTable<
     Backup,
@@ -44,12 +49,16 @@ export type BackupsDB = Dexie & {
     'cid'
   >;
   prefsDocs: EntityTable<
-  PrefsDoc,
-  'cid'
->;
+    PrefsDoc,
+    'cid'
+  >;
   blobs: EntityTable<
     Blob,
     'cid'
+  >;
+  keys: EntityTable<
+    Key,
+    'id'
   >;
 }
 
@@ -62,6 +71,7 @@ function newDB (name: string = 'storacha-bluesky-backups') {
     repos: 'cid, uploadCid, backupId, accountDid, commit, createdAt, encryptedWith',
     prefsDocs: 'cid, backupId, accountDid, createdAt, encryptedWith',
     blobs: 'cid, contentType, backupId, accountDid, createdAt, encryptedWith',
+    keys: 'id, symkeyCid'
   })
   return db
 }

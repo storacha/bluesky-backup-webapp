@@ -9,7 +9,7 @@ import { varint } from 'multiformats'
 import { base58btc } from 'multiformats/bases/base58'
 
 export interface KeyPair {
-  publicKey: CryptoKey
+  publicKey?: CryptoKey
   privateKey?: CryptoKey
   did: () => string
   toSecret?: () => Promise<string>
@@ -26,37 +26,49 @@ export const tagWith = (code: number, bytes: Uint8Array) => {
 
 const verifierCode = 0x1205
 
-/**
- * This is very close to the `generate` function from @ucanto/principal/rsa
- * but specified encrypt and decrypt capabilities and exposes the DID generation
- * functions to make it easier to identify the key in the UI.
- */
-export async function generateNewKey (): Promise<KeyPair> {
-  const { publicKey, privateKey } = await crypto.subtle.generateKey(
-    {
-      name: 'RSA-OAEP',
-      modulusLength: 2048,
-      publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
-      hash: { name: 'SHA-256' },
-    },
+export const keyParams = {
+  name: 'RSA-OAEP',
+  modulusLength: 2048,
+  publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+  hash: { name: 'SHA-256' },
+}
 
-    true,
-    ['encrypt', 'decrypt']
-  )
-
+export async function calculateDID (publicKey: CryptoKey) {
   // Next we need to encode public key for the `did()` method. To do this we first export
   // Subject Public Key Info (SPKI) using web crypto API.
   const spki = await crypto.subtle.exportKey('spki', publicKey)
   // Then we extract public key from the SPKI and tag it with RSA public key
   // multicode
   const publicBytes = tagWith(verifierCode, SPKI.decode(new Uint8Array(spki)))
-  return { 
-    publicKey, 
+  return `did:key:${base58btc.encode(publicBytes)}`
+}
+
+export async function keysToKeypair ({ publicKey, privateKey }: { publicKey: CryptoKey, privateKey: CryptoKey }) {
+  const did = await calculateDID(publicKey)
+  return {
+    publicKey,
     privateKey,
-    did: () => `did:key:${base58btc.encode(publicBytes)}`,
+    did: () => did,
     toSecret: async () => JSON.stringify(
-      await crypto.subtle.exportKey('jwk', privateKey),
+      {
+        publicKey: await crypto.subtle.exportKey('jwk', publicKey),
+        privateKey: await crypto.subtle.exportKey('jwk', privateKey),
+      },
       null, 2
     )
-   }
+  }
+}
+
+/**
+ * This is very close to the `generate` function from @ucanto/principal/rsa
+ * but specified encrypt and decrypt capabilities and exposes the DID generation
+ * functions to make it easier to identify the key in the UI.
+ */
+export async function generateNewKey (): Promise<KeyPair> {
+  const keys = await crypto.subtle.generateKey(
+    keyParams,
+    true,
+    ['encrypt', 'decrypt']
+  )
+  return keysToKeypair(keys)
 }
