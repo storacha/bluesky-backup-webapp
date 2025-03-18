@@ -8,7 +8,7 @@ import { shortenDID } from "@/lib/ui"
 import { KeyPair } from "@/lib/crypto/keys"
 import { KeychainContextProps, useKeychainContext } from "@/contexts/keychain"
 import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react"
-
+import CopyButton from "./CopyButton"
 
 interface KeyDetailsProps {
   keyPair: KeyPair
@@ -29,14 +29,19 @@ function KeyDetails ({ keyPair, onDone }: KeyDetailsProps) {
     setSecret(undefined)
   }
   return (
-    <>
-      <p>We&apos;ve created your new key: {shortenDID(keyPair.did())}</p>
+    <div className="flex flex-col space-y-4">
+      <h3 className="font-bold text-xs uppercase">Key DID: {shortenDID(keyPair.did())}</h3>
       {keyPair?.toSecret && (secret ? (
         <div className="flex flex-col">
           <div className="whitespace-pre w-96 h-24 font-mono text-xs overflow-scroll">{secret}</div>
-          <button className="btn" onClick={hideSecret}>
-            Hide Secret
-          </button>
+          <div className="flex flex-row space-x-2">
+            <button className="btn" onClick={hideSecret}>
+              Hide Secret
+            </button>
+            <div className="btn flex flex-col justify-center items-center">
+              <CopyButton text={secret} />
+            </div>
+          </div>
         </div>
       ) : (
         <div>
@@ -50,7 +55,7 @@ function KeyDetails ({ keyPair, onDone }: KeyDetailsProps) {
           )}
         </div>
       ))}
-    </>
+    </div>
   )
 }
 
@@ -61,6 +66,7 @@ type KeychainProps = KeychainContextProps & {
 export function KeychainView ({
   keyPairs = [],
   generateKeyPair,
+  setSelectedKeyPair,
   className
 }: KeychainProps) {
   const [generatingKeyPair, setGeneratingKeyPair] = useState(false)
@@ -81,18 +87,23 @@ export function KeychainView ({
         generatingKeyPair ? (
           <Loader />
         ) : (
-          <KeyDetails keyPair={newKeyPair} onDone={() => { setNewKeyPair(undefined) }} />
+          <div>
+            <h3>We&apos;ve created your new key!</h3>
+            <KeyDetails keyPair={newKeyPair} onDone={() => { setNewKeyPair(undefined) }} />
+          </div>
         )
       ) : (
         <>
-          <PlusIcon onClick={onClickAdd} className="w-6 h-6 cursor-pointer hover:bg-gray-100" />
+          <PlusIcon onClick={onClickAdd} className="w-6 h-6 cursor-pointer hover:bg-gray-200" />
           <div className="flex flex-col">
             {
               keyPairs.map((keyPair, i) => (
                 <div key={i} className="flex flex-row space-x-2 items-center odd:bg-gray-100/80">
-                  <div className="w-52">
+                  <div className="w-52 hover:bg-gray-200 cursor-pointer"
+                    onClick={() => { setSelectedKeyPair(keyPair) }}>
                     {shortenDID(keyPair.did())}
                   </div>
+                  <CopyButton text={keyPair.did()} />
                   <Popover className="relative flex items-center">
                     <PopoverButton className="outline-none cursor-pointer hover:bg-gray-100 p-2">
                       <Cog8ToothIcon className="w-4 h-4" />

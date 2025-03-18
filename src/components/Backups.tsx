@@ -24,6 +24,9 @@ export function Backups ({ className = '' }: { className?: string }) {
               <th>
                 Created At
               </th>
+              <th>
+                Encrypted With
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -75,6 +78,9 @@ export function Repo ({ backupId, className = '' }: { backupId: number, classNam
               <th>
                 Commit
               </th>
+              <th>
+                Encrypted With
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -95,6 +101,9 @@ export function Repo ({ backupId, className = '' }: { backupId: number, classNam
                 </td>
                 <td>
                   {repo.commit}
+                </td>
+                <td>
+                  {repo.encryptedWith && shortenDID(repo.encryptedWith)}
                 </td>
               </tr>
             )}
@@ -134,6 +143,9 @@ export function Prefs ({ backupId, className = '' }: { backupId: number, classNa
                 <td>
                   {shortenDID(prefsDoc.accountDid)}
                 </td>
+                <td>
+                  {prefsDoc.encryptedWith && shortenDID(prefsDoc.encryptedWith)}
+                </td>
               </tr>
             )}
           </tbody>
@@ -159,6 +171,9 @@ export function Blobs ({ backupId, className = '' }: { backupId: number, classNa
               <th>
                 Bluesky Account DID
               </th>
+              <th>
+                Encrypted With
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -171,6 +186,9 @@ export function Blobs ({ backupId, className = '' }: { backupId: number, classNa
                 </td>
                 <td>
                   {shortenDID(blob.accountDid)}
+                </td>
+                <td>
+                  {blob.encryptedWith && shortenDID(blob.encryptedWith)}
                 </td>
               </tr>
             ))}

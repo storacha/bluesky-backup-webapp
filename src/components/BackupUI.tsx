@@ -6,18 +6,43 @@ import { ContextState as StorachaContext, Space, useW3 } from "@w3ui/react"
 import { useState } from "react"
 import { SpaceFinder } from "./SpaceFinder"
 import { useLiveQuery } from "dexie-react-hooks"
-import { AdjustmentsHorizontalIcon, ArrowRightCircleIcon, CircleStackIcon, CloudIcon } from "@heroicons/react/20/solid"
+import { AdjustmentsHorizontalIcon, ArrowRightCircleIcon, CircleStackIcon, CloudIcon, KeyIcon, LockClosedIcon } from "@heroicons/react/20/solid"
 import { useBackupsContext } from "@/contexts/backups"
 import { Blob, PrefsDoc, Repo } from "@/lib/db"
 import { Loader } from "./Loader"
+import { useKeychainContext } from "@/contexts/keychain"
+import { KeyPair } from "@/lib/crypto/keys"
+import { shortenDID } from "@/lib/ui"
+import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react"
+import Keychain from "./Keychain"
+
+interface EncryptionButtonProps {
+  state: boolean
+  setState: (state: boolean) => unknown
+  selectedKeyPair?: KeyPair
+}
+
+function EncryptionButton ({ state, setState, selectedKeyPair }: EncryptionButtonProps) {
+  const encryptionEnabled = selectedKeyPair && state
+  return (
+    <LockClosedIcon
+      className={`w-6 h-6 cursor-pointer p-1 rounded-lg ${encryptionEnabled ? 'text-emerald-500 hover:bg-gray-200' : 'text-gray-500 hover:bg-gray-200'}`}
+      onClick={() => { setState(Boolean(selectedKeyPair && !state)) }} />
+  )
+}
 
 export default function BackupUI () {
+  const { selectedKeyPair } = useKeychainContext()
   const { backupsStore: backupMetadataStore } = useBackupsContext()
   const [isBackingUpRepo, setIsBackingUpRepo] = useState(false)
   const [isBackingUpPrefsDoc, setIsBackingUpPrefsDoc] = useState(false)
   const [isBackingUpBlobs, setIsBackingUpBlobs] = useState(false)
   const [selectedSpace, setSelectedSpace] = useState<Space>()
   const [currentBackupId, setCurrentBackupId] = useState<number>()
+  const [encryptRepo, setEncryptRepo] = useState<boolean>(false)
+  const [encryptPrefsDoc, setEncryptPrefsDoc] = useState<boolean>(!!selectedKeyPair)
+  const [encryptBlobs, setEncryptBlobs] = useState<boolean>(false)
+
   const [storacha] = useW3()
   const bluesky = useBskyAuthContext()
   const backupEvents = new EventTarget()
@@ -47,7 +72,8 @@ export default function BackupUI () {
     const backupId = currentBackupId
     if (backupId && space && bluesky.userProfile && bluesky.agent && storacha.client) {
       setIsBackingUpRepo(true)
-      await backupRepo(backupId, bluesky.userProfile, bluesky.agent, storacha.client, backupMetadataStore, { eventTarget: backupEvents })
+      await backupRepo(backupId, bluesky.userProfile, bluesky.agent, storacha.client, backupMetadataStore,
+        { eventTarget: backupEvents, encryptionKey: encryptRepo ? selectedKeyPair : undefined })
       setIsBackingUpRepo(false)
     } else {
       console.log('not backing up, profile, agent, client:', bluesky.userProfile, bluesky.agent, storacha.client)
@@ -58,7 +84,9 @@ export default function BackupUI () {
     const backupId = currentBackupId
     if (backupId && space && bluesky.userProfile && bluesky.agent && storacha.client) {
       setIsBackingUpPrefsDoc(true)
-      await backupPrefs(backupId, bluesky.userProfile, bluesky.agent, storacha.client, backupMetadataStore, { eventTarget: backupEvents })
+      await backupPrefs(backupId, bluesky.userProfile, bluesky.agent, storacha.client, backupMetadataStore,
+        { eventTarget: backupEvents, encryptionKey: encryptPrefsDoc ? selectedKeyPair : undefined }
+      )
       setIsBackingUpPrefsDoc(false)
     } else {
       console.log('not backing up, profile, agent, client:', bluesky.userProfile, bluesky.agent, storacha.client)
@@ -69,7 +97,9 @@ export default function BackupUI () {
     const backupId = currentBackupId
     if (backupId && space && bluesky.userProfile && bluesky.agent && storacha.client) {
       setIsBackingUpBlobs(true)
-      await backupBlobs(backupId, bluesky.userProfile, bluesky.agent, storacha.client, backupMetadataStore, { eventTarget: backupEvents })
+      await backupBlobs(backupId, bluesky.userProfile, bluesky.agent, storacha.client, backupMetadataStore,
+        { eventTarget: backupEvents, encryptionKey: encryptBlobs ? selectedKeyPair : undefined }
+      )
       setIsBackingUpBlobs(false)
     } else {
       console.log('not backing up, profile, agent, client:', bluesky.userProfile, bluesky.agent, storacha.client)
@@ -88,9 +118,16 @@ export default function BackupUI () {
     onClickBackupRepo={onClickBackupRepo}
     onClickInitializeBackup={onClickInitializeBackup}
     onClickQuickPublicBackup={onClickQuickPublicBackup}
+    setEncryptRepo={setEncryptRepo}
+    encryptRepo={encryptRepo}
+    setEncryptPrefsDoc={setEncryptPrefsDoc}
+    encryptPrefsDoc={encryptPrefsDoc}
+    setEncryptBlobs={setEncryptBlobs}
+    encryptBlobs={encryptBlobs}
     blobs={blobs}
     repo={repo}
     prefsDoc={prefsDoc}
+    selectedKeyPair={selectedKeyPair}
   />
 }
 
@@ -112,10 +149,21 @@ export interface BackupUIViewProps {
   repo?: Repo | null
   blobs?: Blob[] | null
   prefsDoc?: PrefsDoc | null
+  encryptRepo: boolean
+  setEncryptRepo: (value: boolean) => unknown
+  encryptPrefsDoc: boolean
+  setEncryptPrefsDoc: (value: boolean) => unknown
+  encryptBlobs: boolean
+  setEncryptBlobs: (value: boolean) => unknown
+  selectedKeyPair?: KeyPair
 }
 
 export function BackupUIView ({
-  bluesky, storacha, space, setSelectedSpace,
+  bluesky, storacha, space,
+  setSelectedSpace,
+  encryptRepo, setEncryptRepo,
+  encryptPrefsDoc, setEncryptPrefsDoc,
+  encryptBlobs, setEncryptBlobs,
   backupEvents, currentBackupId,
   isBackingUpRepo,
   isBackingUpBlobs,
@@ -124,10 +172,10 @@ export function BackupUIView ({
   onClickBackupRepo,
   onClickBackupPrefsDoc,
   onClickInitializeBackup,
-  onClickQuickPublicBackup,
   repo,
   blobs,
-  prefsDoc
+  prefsDoc,
+  selectedKeyPair
 }: BackupUIViewProps) {
   const userAuthenticatedToBothServices = bluesky.userProfile && storacha.accounts[0]
   const [backupProgressComponent, setBackupProgressComponent] = useState(
@@ -199,6 +247,19 @@ export function BackupUIView ({
           <div className="flex flex-col w-xl">
             <div className="flex flex-row justify-between items-center mb-4 space-x-8">
               <h3 className="uppercase font-bold">Creating Backup #{currentBackupId}</h3>
+              <div className="flex flex-row items-center w-52">
+                <Popover className="relative">
+                  <PopoverButton className="outline-none cursor-pointer hover:bg-gray-100 p-2">
+                    <KeyIcon className="w-6 h-6" />
+                  </PopoverButton>
+                  <PopoverPanel anchor="bottom" className="flex flex-col bg-white border rounded p-2">
+                    <Keychain />
+                  </PopoverPanel>
+                </Popover>
+                <h3 className="font-bold uppercase text-sm">
+                  {selectedKeyPair && shortenDID(selectedKeyPair.did())}
+                </h3>
+              </div>
               <div>
                 <h4 className="uppercase text-xs font-bold text-right">Storacha Space</h4>
                 <SpaceFinder
@@ -206,15 +267,15 @@ export function BackupUIView ({
                   className="w-52 -mt-1" />
               </div>
             </div>
-            <div className="flex flex-row items-center w-full">
-              <div className="w-28"></div>
+            <div className="flex flex-row items-center w-full space-x-0">
+              <div className="w-36"></div>
               <div className="w-24">
                 <h4 className="text-center uppercase text-xs font-bold">
                   {bluesky.session?.server.issuer.split("//")[1]}
                 </h4>
                 <div className="text-xs w-full truncate">{bluesky.userProfile?.did}</div>
               </div>
-              <div className="w-6 h-6">
+              <div className="w-20 h-6">
               </div>
               <div className="w-24">
                 <h4 className="text-center uppercase text-xs font-bold">
@@ -225,9 +286,10 @@ export function BackupUIView ({
             </div>
             <div className="flex flex-row items-center my-2 space-x-8">
               <h5 className="font-bold uppercase text-sm text-right w-28">Repository</h5>
-              <div className="rounded-full hover:bg-white border w-8 h-8 flex flex-col justify-center items-center">
+              <div className="ml-8 rounded-full hover:bg-white border w-8 h-8 flex flex-col justify-center items-center">
                 <CircleStackIcon className="w-4 h-4" />
               </div>
+              <EncryptionButton state={encryptRepo} setState={setEncryptRepo} selectedKeyPair={selectedKeyPair} />
               {isBackingUpRepo ? (
                 <Loader className="w-6 h-6" />
               ) : (
@@ -237,15 +299,22 @@ export function BackupUIView ({
                   <ArrowRightCircleIcon className="w-6 h-6" />
                 </button>
               )}
-              <div className={`${repo ? 'border-emerald-500 text-emerald-500' : 'border-gray-500 text-gray-500'} rounded-full hover:bg-white border w-8 h-8 flex flex-col justify-center items-center`}>
-                <CircleStackIcon className="w-4 h-4" />
+              <div className="flex flex-row items-center">
+                <div className={`${repo ? 'border-emerald-500 text-emerald-500' : 'border-gray-500 text-gray-500'} rounded-full hover:bg-white border w-8 h-8 flex flex-col justify-center items-center`}>
+                  <CircleStackIcon className="w-4 h-4" />
+                </div>
+                {repo && encryptRepo && (
+                  <LockClosedIcon
+                    className={`w-6 h-6 cursor-pointer p-1 rounded-lg text-emerald-500`} />
+                )}
               </div>
             </div>
             <div className="flex flex-row items-center my-2 space-x-8">
               <h5 className="font-bold uppercase text-sm text-right w-28">Blobs</h5>
-              <div className="rounded-full hover:bg-white border w-8 h-8 flex flex-col justify-center items-center">
+              <div className="ml-8 rounded-full hover:bg-white border w-8 h-8 flex flex-col justify-center items-center">
                 <CloudIcon className="w-4 h-4" />
               </div>
+              <EncryptionButton state={encryptBlobs} setState={setEncryptBlobs} selectedKeyPair={selectedKeyPair} />
               {isBackingUpBlobs ? (
                 <Loader className="w-6 h-6" />
               ) : (
@@ -255,18 +324,25 @@ export function BackupUIView ({
                   <ArrowRightCircleIcon className="w-6 h-6" />
                 </button>
               )}
-              <div className={`${blobs && (blobs.length > 0) ? 'border-emerald-500 text-emerald-500' : 'border-gray-500 text-gray-500'} rounded-full hover:bg-white border w-8 h-8 flex flex-col justify-center items-center`}>
-                <span className="font-bold text-sm ">
-                  {blobs?.length || '0'}
-                </span>
+              <div className="flex flex-row items-center">
+                <div className={`${blobs && (blobs.length > 0) ? 'border-emerald-500 text-emerald-500' : 'border-gray-500 text-gray-500'} rounded-full hover:bg-white border w-8 h-8 flex flex-col justify-center items-center`}>
+                  <span className="font-bold text-sm ">
+                    {blobs?.length || '0'}
+                  </span>
+                </div>
+                {blobs && (blobs.length > 0) && encryptBlobs && (
+                  <LockClosedIcon
+                    className={`w-6 h-6 cursor-pointer p-1 rounded-lg text-emerald-500`} />
+                )}
               </div>
             </div>
 
             <div className="flex flex-row items-center my-2 space-x-8">
               <h5 className="font-bold uppercase text-sm text-right w-28">Preferences</h5>
-              <div className="rounded-full hover:bg-white border w-8 h-8 flex flex-col justify-center items-center">
+              <div className="ml-8 rounded-full hover:bg-white border w-8 h-8 flex flex-col justify-center items-center">
                 <AdjustmentsHorizontalIcon className="w-4 h-4" />
               </div>
+              <EncryptionButton state={encryptPrefsDoc} setState={setEncryptPrefsDoc} selectedKeyPair={selectedKeyPair} />
               {isBackingUpPrefsDoc ? (
                 <Loader className="w-6 h-6" />
               ) : (
@@ -276,8 +352,14 @@ export function BackupUIView ({
                   <ArrowRightCircleIcon className="w-6 h-6" />
                 </button>
               )}
-              <div className={`${prefsDoc ? 'border-emerald-500 text-emerald-500' : 'border-gray-500 text-gray-500'} rounded-full hover:bg-white border w-8 h-8 flex flex-col justify-center items-center`}>
-                <AdjustmentsHorizontalIcon className="w-4 h-4" />
+              <div className="flex flex-row items-center">
+                <div className={`${prefsDoc ? 'border-emerald-500 text-emerald-500' : 'border-gray-500 text-gray-500'} rounded-full hover:bg-white border w-8 h-8 flex flex-col justify-center items-center`}>
+                  <AdjustmentsHorizontalIcon className="w-4 h-4" />
+                </div>
+                {prefsDoc && encryptPrefsDoc && (
+                  <LockClosedIcon
+                    className={`w-6 h-6 cursor-pointer p-1 rounded-lg text-emerald-500`} />
+                )}
               </div>
             </div>
           </div>
@@ -285,14 +367,8 @@ export function BackupUIView ({
           <div className="flex flex-col">
             <button
               onClick={onClickInitializeBackup} disabled={!space}
-              className="btn">
-              Initialize Backup
-            </button>
-            <span className="font-bold">OR</span>
-            <button
-              onClick={onClickQuickPublicBackup} disabled={!space}
-              className="btn">
-              Quick Public Data Backup
+              className="btn font-bold bg-red-500 text-white uppercase m-auto px-4 py-2">
+              Start Backup
             </button>
           </div>
         )

@@ -3,6 +3,7 @@ import { ProfileViewBasic } from "@atproto/api/dist/client/types/app/bsky/actor/
 import { OAuthClientMetadataInput } from "@atproto/oauth-client-browser";
 import { CARLink, Client } from "@w3ui/react";
 import { BackupMetadataStore } from "./backupMetadataStore";
+import { KeyPair } from "./crypto/keys";
 
 const ensureTrailingSlash = (s: string) => s.endsWith('/') ? s : s.concat('/')
 
@@ -23,6 +24,7 @@ export const blueskyClientMetadata: OAuthClientMetadataInput = {
 
 export interface BackupOptions {
     eventTarget?: EventTarget
+    encryptionKey?: KeyPair
 }
 
 export async function initializeBackup (profile: ProfileViewBasic, metadataStore: BackupMetadataStore): Promise<number> {
@@ -30,7 +32,13 @@ export async function initializeBackup (profile: ProfileViewBasic, metadataStore
     return await metadataStore.addBackup(accountDid)
 }
 
-export async function backupRepo (backupId: number, profile: ProfileViewBasic, agent: Agent, storachaClient: Client, metadataStore: BackupMetadataStore, { eventTarget }: BackupOptions = {}) {
+export async function backupRepo (
+    backupId: number,
+    profile: ProfileViewBasic, agent: Agent,
+    storachaClient: Client,
+    metadataStore: BackupMetadataStore,
+    { eventTarget, encryptionKey }: BackupOptions = {}
+) {
     const accountDid = profile.did
 
     const commitResp = await agent.com.atproto.sync.getLatestCommit({ did: accountDid })
@@ -40,7 +48,9 @@ export async function backupRepo (backupId: number, profile: ProfileViewBasic, a
     eventTarget?.dispatchEvent(new CustomEvent('repo:fetching', { detail: { did: accountDid } }))
     const repoRes = await agent.com.atproto.sync.getRepo({ did: accountDid })
     console.log("got repo with headers", repoRes.headers)
-
+    if (encryptionKey) {
+        console.warn("WARNING: ENCRYPTION NOT YET IMPLEMENTED: SYMMETRIC KEY STORAGE TBD")
+    }
     eventTarget?.dispatchEvent(new CustomEvent('repo:uploading'))
     let storachaRepoCid: CARLink | undefined;
     const storachaUploadCid = await storachaClient.uploadCAR(new Blob([repoRes.data]), {
@@ -52,14 +62,14 @@ export async function backupRepo (backupId: number, profile: ProfileViewBasic, a
     })
     eventTarget?.dispatchEvent(new CustomEvent('repo:uploaded', { detail: { cid: storachaRepoCid } }))
     if (storachaRepoCid) {
-        await metadataStore.addRepo(storachaRepoCid.toString(), storachaUploadCid.toString(), backupId, accountDid, latestCommit)
+        await metadataStore.addRepo(storachaRepoCid.toString(), storachaUploadCid.toString(), backupId, accountDid, latestCommit, { encryptedWith: encryptionKey?.did() })
     } else {
         console.warn("Uploaded CAR but did not find a CID, this is very surprising and your backup cannot be recorded!")
     }
     console.log("repo backed up")
 }
 
-export async function backupPrefs (backupId: number, profile: ProfileViewBasic, agent: Agent, storachaClient: Client, metadataStore: BackupMetadataStore, { eventTarget }: BackupOptions = {}) {
+export async function backupPrefs (backupId: number, profile: ProfileViewBasic, agent: Agent, storachaClient: Client, metadataStore: BackupMetadataStore, { eventTarget, encryptionKey }: BackupOptions = {}) {
     const accountDid = profile.did
 
     eventTarget?.dispatchEvent(new CustomEvent('prefs:fetching', { detail: { did: accountDid } }))
@@ -67,14 +77,22 @@ export async function backupPrefs (backupId: number, profile: ProfileViewBasic, 
 
     eventTarget?.dispatchEvent(new CustomEvent('prefs:uploading'))
     const blob = new Blob([JSON.stringify(prefs.data)], { type: "application/json" })
-
+    if (encryptionKey) {
+        console.warn("WARNING: ENCRYPTION NOT YET IMPLEMENTED: SYMMETRIC KEY STORAGE TBD")
+    }
     const storachaPrefsUploadCid = await storachaClient.uploadFile(blob)
     eventTarget?.dispatchEvent(new CustomEvent('prefs:uploaded', { detail: { cid: storachaPrefsUploadCid } }))
-    await metadataStore.addPrefsDoc(storachaPrefsUploadCid.toString(), backupId, accountDid)
+    await metadataStore.addPrefsDoc(storachaPrefsUploadCid.toString(), backupId, accountDid, { encryptedWith: encryptionKey?.did() })
     console.log("prefs backed up")
 }
 
-export async function backupBlobs (backupId: number, profile: ProfileViewBasic, agent: Agent, storachaClient: Client, metadataStore: BackupMetadataStore, { eventTarget }: BackupOptions = {}) {
+export async function backupBlobs (
+    backupId: number,
+    profile: ProfileViewBasic, agent: Agent,
+    storachaClient: Client,
+    metadataStore: BackupMetadataStore,
+    { eventTarget, encryptionKey }: BackupOptions = {}
+) {
     const accountDid = profile.did
     let blobCursor: string | undefined = undefined
 
@@ -97,11 +115,19 @@ export async function backupBlobs (backupId: number, profile: ProfileViewBasic, 
                 did: accountDid,
                 cid,
             })
-
+            if (encryptionKey) {
+                console.warn("WARNING: ENCRYPTION NOT YET IMPLEMENTED: SYMMETRIC KEY STORAGE TBD")
+            }
             eventTarget?.dispatchEvent(new CustomEvent('blob:uploading', { detail: { cid, i, count: listedBlobs.data.cids.length } }))
             const storachaBlobCid = await storachaClient.uploadFile(new Blob([blobRes.data]))
             eventTarget?.dispatchEvent(new CustomEvent('blob:uploaded', { detail: { cid: storachaBlobCid, i, count: listedBlobs.data.cids.length } }))
-            await metadataStore.addBlob(storachaBlobCid.toString(), backupId, accountDid, { contentType: blobRes.headers['content-type'] })
+            await metadataStore.addBlob(
+                storachaBlobCid.toString(), backupId, accountDid,
+                {
+                    contentType: blobRes.headers['content-type'],
+                    encryptedWith: encryptionKey?.did()
+                }
+            )
             i++
         }
 
