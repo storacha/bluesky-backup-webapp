@@ -1,4 +1,4 @@
-import db, { Backup, BackupsDB, Repo, Blob, PrefsDoc, Key } from "./db"
+import db, { Backup, BackupsDB, Repo, Blob, PrefsDoc, KeyMeta } from "./db"
 
 interface EncryptableOptions {
   encryptedWith?: string
@@ -16,12 +16,12 @@ export interface BackupMetadataStore {
   addPrefsDoc: (cid: string, backupId: number, accountDid: string, opts?: PrefsDocOptions) => Promise<void>
   addBlob: (cid: string, backupId: number, accountDid: string, opts?: BlobOptions) => Promise<void>
   addBackup: (accountDid: string) => Promise<number>
-  addKey: (id: string, symkeyCid: string) => Promise<Key>
+  addKey: (id: string, symkeyCid: string) => Promise<KeyMeta>
   listBackups: () => Promise<Backup[]>
   getRepo: (backupId: number) => Promise<Repo | undefined>
   listBlobs: (backupId: number) => Promise<Blob[]>
   getPrefsDoc: (backupId: number) => Promise<PrefsDoc | undefined>
-  listKeys: () => Promise<Key[]>
+  listKeys: () => Promise<KeyMeta[]>
   deleteKey: (id: string) => Promise<unknown>
 }
 

@@ -3,31 +3,33 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { KeychainView } from '@/components/Keychain';
 import { fn } from '@storybook/test';
 
-const key = {
-  id: 'did:key:publiconlykeypair',
-  symkeyCid: 'bafybeigreable'
-}
-
 const keyPair = {
   publicKey: {} as CryptoKey,
   PrivateKey: {} as CryptoKey,
-  did: () => key.id,
+  did: () => 'did:key:keypair',
   toSecret: async () => "secret secret, I've got a secret!"
 }
 
-const publicOnlyKey = {
-  id: 'did:key:publiconlykeypair',
-  symkeyCid: 'bafybeigreable'
+const key = {
+  id: keyPair.did(),
+  symkeyCid: 'bafybeigreable',
+  keyPair
 }
 
 const publicOnlyKeyPair = {
   publicKey: {} as CryptoKey,
-  did: () => publicOnlyKey.id,
+  did: () => 'did:key:publiconlykeypair',
 }
 
-const keyPairs = {
-  [publicOnlyKeyPair.did()]: publicOnlyKeyPair,
-  [keyPair.did()]: keyPair
+const publicOnlyKey = {
+  id: publicOnlyKeyPair.did(),
+  symkeyCid: 'bafybeipublicgrawf34af4',
+  keyPair: publicOnlyKeyPair
+}
+
+const metaOnlyKey = {
+  id: 'did:key:metaonlykeypair',
+  symkeyCid: 'bafybeimetagreableawfani',
 }
 
 const meta = {
@@ -39,7 +41,6 @@ const meta = {
   tags: ['autodocs'],
   args: {
     keys: [],
-    keyPairs,
     generateKeyPair: async () => publicOnlyKey,
     setSelectedKey: fn(),
     importKey: fn(),
@@ -56,7 +57,6 @@ export const Initial: Story = {};
 
 export const WithKeys: Story = {
   args: {
-    keys: [publicOnlyKey, key],
-    keyPairs
+    keys: [publicOnlyKey, key, metaOnlyKey],
   }
 };

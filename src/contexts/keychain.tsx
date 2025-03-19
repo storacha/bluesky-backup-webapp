@@ -1,24 +1,42 @@
 'use client'
 
-import { generateNewKeyPair, generateNewSymkey, KeyPair, keyParams, keysToKeypair } from "@/lib/crypto/keys";
+import { generateNewKeyPair, generateNewSymkey, KeyPair, keyParams, keysToKeypair, symkeyParams } from "@/lib/crypto/keys";
 import type { ReactNode } from "react";
 import { createContext, useContext, useState, } from "react";
 import { useBackupsContext } from "./backups";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useW3 } from "@w3ui/react";
-import { Key } from "@/lib/db";
+import { KeyMeta } from "@/lib/db";
+import { GATEWAY_HOST } from "@/lib/constants";
+
+export type Key = KeyMeta & {
+  keyPair?: KeyPair
+}
 
 export type KeyImportFn = (key: Key, keyMaterial: string) => Promise<void>
 
 export type KeychainContextProps = {
   keys: Key[]
-  keyPairs: Record<string, KeyPair>
   selectedKey?: Key
   setSelectedKey: (key: Key) => unknown
   generateKeyPair?: () => Promise<Key | undefined>
   importKey: KeyImportFn
   forgetKey: (key: Key) => Promise<unknown>
 };
+
+export async function hydrateSymkey (key: Key) {
+  if (key.symkeyCid && key.keyPair?.privateKey) {
+    const resp = await fetch(`${GATEWAY_HOST}/ipfs/${key.symkeyCid}`)
+    const keyBytes = await crypto.subtle.decrypt(
+      keyParams,
+      key.keyPair.privateKey,
+      await resp.arrayBuffer()
+    )
+    return await crypto.subtle.importKey('raw', keyBytes, symkeyParams, false, ['encrypt', 'decrypt'])
+  } else {
+    throw new Error(`could not hydrate symkey from ${key.symkeyCid}`)
+  }
+}
 
 export const KeychainContext = createContext<KeychainContextProps>({
   keys: [],
@@ -30,7 +48,6 @@ export const KeychainContext = createContext<KeychainContextProps>({
 
 export const KeychainProvider = ({ children }: { children: ReactNode | ReactNode[] }) => {
   const { backupsStore } = useBackupsContext()
-  const [keyPairIndex, setKeyPairIndex] = useState<Record<string, KeyPair>>({})
   const [selectedKey, setSelectedKey] = useState<Key>()
   const [storacha] = useW3()
   async function generateKeyPair () {
@@ -43,12 +60,9 @@ export const KeychainProvider = ({ children }: { children: ReactNode | ReactNode
             await crypto.subtle.exportKey('raw', symkey)
           )])
         )
-        const newKey = await backupsStore.addKey(keyPair.did(), cid.toString())
+        const newKey: Key = await backupsStore.addKey(keyPair.did(), cid.toString())
+        newKey.keyPair = keyPair
         setSelectedKey(newKey)
-        setKeyPairIndex(m => {
-          m[newKey.id] = keyPair
-          return m
-        })
         return newKey
       } else {
         console.warn("keypair was generated without a public key, that's weird")
@@ -63,23 +77,15 @@ export const KeychainProvider = ({ children }: { children: ReactNode | ReactNode
     const keys = JSON.parse(keyMaterial)
     const privateKey = await crypto.subtle.importKey('jwk', keys.privateKey, keyParams, true, ['decrypt'])
     const publicKey = await crypto.subtle.importKey('jwk', keys.publicKey, keyParams, true, ['encrypt'])
-    const keyPair = await keysToKeypair({ key, publicKey, privateKey })
+    key.keyPair = await keysToKeypair({ publicKey, privateKey })
     setSelectedKey(key)
-    setKeyPairIndex(m => {
-      m[key.id] = keyPair
-      return m
-    })
   }
   async function forgetKey (key: Key) {
-    setKeyPairIndex(m => {
-      delete m[key.id]
-      return m
-    })
     await backupsStore.deleteKey(key.id)
   }
   return (
     <KeychainContext.Provider value={{
-      keys: keys ?? [], keyPairs: keyPairIndex, selectedKey, 
+      keys: keys ?? [], selectedKey,
       setSelectedKey, generateKeyPair,
       importKey, forgetKey
     }}>

@@ -9,10 +9,12 @@ import { ATPROTO_DEFAULT_SINK, ATPROTO_DEFAULT_SOURCE, GATEWAY_HOST, REQUIRED_AT
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { Secp256k1Keypair } from "@atproto/crypto"
-import { AdjustmentsHorizontalIcon, ArrowRightCircleIcon, CircleStackIcon, CloudIcon, IdentificationIcon } from "@heroicons/react/20/solid"
+import { AdjustmentsHorizontalIcon, ArrowRightCircleIcon, CircleStackIcon, CloudIcon, IdentificationIcon, KeyIcon } from "@heroicons/react/20/solid"
 import { Loader } from "./Loader"
 import { shorten, shortenDID } from "@/lib/ui"
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react'
+import { hydrateSymkey, Key, useKeychainContext } from "@/contexts/keychain"
+import Keychain from "./Keychain"
 
 type LoginFn = (identifier: string, password: string, options?: { server?: string }) => Promise<void>
 
@@ -61,6 +63,7 @@ export async function oauthToPds (pdsUrl: string, handle: string) {
 }
 
 interface RestoreDialogViewProps {
+  keys: Key[]
   sourceSession?: CredentialSession
   sinkSession?: CredentialSession
   loginToSource: LoginFn
@@ -88,6 +91,7 @@ interface RestoreDialogViewProps {
 }
 
 export default function RestoreDialog ({ backupId }: { backupId: number }) {
+  const { keys } = useKeychainContext()
   const repo = useLiveQuery(() => db.
     repos.where('backupId').equals(backupId).first())
   const blobs = useLiveQuery(() => db.
@@ -224,16 +228,39 @@ export default function RestoreDialog ({ backupId }: { backupId: number }) {
     }
   }
 
+  async function loadPrefsDoc () {
+    if (prefsDoc) {
+      const response = await fetch(`${GATEWAY_HOST}/ipfs/${prefsDoc.cid}`)
+      let prefs
+      if (prefsDoc.encryptedWith) {
+        const key = keys.find(k => k.id === prefsDoc.encryptedWith)
+        if (!key) {
+          throw new Error('could not find key')
+        } else {
+          const decryptionKey = await hydrateSymkey(key)
+          const storedBytes = await response.arrayBuffer()
+          const iv = storedBytes.slice(0, 12)
+          const encryptedBytes = storedBytes.slice(12)
+          const jsonBytes = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, decryptionKey, encryptedBytes)
+          prefs = JSON.parse(new TextDecoder().decode(jsonBytes))
+        }
+      } else {
+        prefs = await response.json()
+      }
+      return prefs
+    }
+  }
+
   async function restorePrefsDoc () {
     if (prefsDoc && sinkAgent) {
       setIsRestoringPrefsDoc(true)
       console.log("restoring", prefsDoc.cid)
-      const response = await fetch(`${GATEWAY_HOST}/ipfs/${prefsDoc.cid}`)
-      await sinkAgent.app.bsky.actor.putPreferences(await response.json())
+      const prefs = await loadPrefsDoc()
+      await sinkAgent.app.bsky.actor.putPreferences(prefs)
       setIsRestoringPrefsDoc(false)
       setIsPrefsDocRestored(true)
     } else {
-      console.warn('not restoring:', prefsDoc, sinkAgent)
+      throw new Error(`not restoring:${prefsDoc} to ${sinkAgent}`)
     }
   }
 
@@ -252,32 +279,36 @@ export default function RestoreDialog ({ backupId }: { backupId: number }) {
   }
 
   return (
-    <RestoreDialogView
-      sourceSession={sourceSession}
-      sinkSession={sinkSession}
-      loginToSink={loginToSink}
-      loginToSource={loginToSource}
-      createAccount={createAccount}
-      restoreRepo={restoreRepo}
-      restoreBlobs={restoreBlobs}
-      restorePrefsDoc={restorePrefsDoc}
-      transferIdentity={transferIdentity}
-      sendPlcRestoreAuthorizationEmail={sendPlcRestoreAuthorizationEmail}
-      isPlcRestoreAuthorizationEmailSent={plceRestoreAuthorizationEmailSent}
-      setupPlcRestore={setupPlcRestore}
-      isPlcRestoreSetup={!!plcOp}
-      repo={repo}
-      blobs={blobs}
-      prefsDoc={prefsDoc}
-      isRestoringRepo={isRestoringRepo}
-      isRestoringBlobs={isRestoringBlobs}
-      isRestoringPrefsDoc={isRestoringPrefsDoc}
-      isTransferringIdentity={isTransferringIdentity}
-      isRepoRestored={isRepoRestored}
-      areBlobsRestored={areBlobsRestored}
-      isPrefsDocRestored={isPrefsDocRestored}
-      isIdentityTransferred={isIdentityTransferred}
-    />
+    <>
+      <button onClick={async () => console.log(await loadPrefsDoc())}>LOAD</button>
+      <RestoreDialogView
+        keys={keys}
+        sourceSession={sourceSession}
+        sinkSession={sinkSession}
+        loginToSink={loginToSink}
+        loginToSource={loginToSource}
+        createAccount={createAccount}
+        restoreRepo={restoreRepo}
+        restoreBlobs={restoreBlobs}
+        restorePrefsDoc={restorePrefsDoc}
+        transferIdentity={transferIdentity}
+        sendPlcRestoreAuthorizationEmail={sendPlcRestoreAuthorizationEmail}
+        isPlcRestoreAuthorizationEmailSent={plceRestoreAuthorizationEmailSent}
+        setupPlcRestore={setupPlcRestore}
+        isPlcRestoreSetup={!!plcOp}
+        repo={repo}
+        blobs={blobs}
+        prefsDoc={prefsDoc}
+        isRestoringRepo={isRestoringRepo}
+        isRestoringBlobs={isRestoringBlobs}
+        isRestoringPrefsDoc={isRestoringPrefsDoc}
+        isTransferringIdentity={isTransferringIdentity}
+        isRepoRestored={isRepoRestored}
+        areBlobsRestored={areBlobsRestored}
+        isPrefsDocRestored={isPrefsDocRestored}
+        isIdentityTransferred={isIdentityTransferred}
+      />
+    </>
   )
 }
 
@@ -310,6 +341,14 @@ export function RestoreDialogView ({
   const [showTransferAuthorization, setShowTransferAuthorization] = useState(false)
   return (
     <div>
+      <Popover className="relative">
+        <PopoverButton className="outline-none cursor-pointer hover:bg-gray-100 p-2">
+          <KeyIcon className="w-6 h-6" />
+        </PopoverButton>
+        <PopoverPanel anchor="bottom" className="flex flex-col bg-white border rounded p-2">
+          <Keychain />
+        </PopoverPanel>
+      </Popover>
       <div className="flex flex-row justify-evenly">
         <div>
           {sourceSession ? (

@@ -34,7 +34,7 @@ export interface Blob {
   encryptedWith?: string;
 }
 
-export interface Key {
+export interface KeyMeta {
   id: string
   symkeyCid?: string
 }
@@ -57,7 +57,7 @@ export type BackupsDB = Dexie & {
     'cid'
   >;
   keys: EntityTable<
-    Key,
+    KeyMeta,
     'id'
   >;
 }

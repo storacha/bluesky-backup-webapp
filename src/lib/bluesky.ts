@@ -3,7 +3,7 @@ import { ProfileViewBasic } from "@atproto/api/dist/client/types/app/bsky/actor/
 import { OAuthClientMetadataInput } from "@atproto/oauth-client-browser";
 import { CARLink, Client } from "@w3ui/react";
 import { BackupMetadataStore } from "./backupMetadataStore";
-import { KeyPair } from "./crypto/keys";
+import { hydrateSymkey, Key } from "@/contexts/keychain";
 
 const ensureTrailingSlash = (s: string) => s.endsWith('/') ? s : s.concat('/')
 
@@ -24,7 +24,7 @@ export const blueskyClientMetadata: OAuthClientMetadataInput = {
 
 export interface BackupOptions {
     eventTarget?: EventTarget
-    encryptionKey?: KeyPair
+    encryptionKey?: Key
 }
 
 export async function initializeBackup (profile: ProfileViewBasic, metadataStore: BackupMetadataStore): Promise<number> {
@@ -62,7 +62,7 @@ export async function backupRepo (
     })
     eventTarget?.dispatchEvent(new CustomEvent('repo:uploaded', { detail: { cid: storachaRepoCid } }))
     if (storachaRepoCid) {
-        await metadataStore.addRepo(storachaRepoCid.toString(), storachaUploadCid.toString(), backupId, accountDid, latestCommit, { encryptedWith: encryptionKey?.did() })
+        await metadataStore.addRepo(storachaRepoCid.toString(), storachaUploadCid.toString(), backupId, accountDid, latestCommit, { encryptedWith: encryptionKey?.id })
     } else {
         console.warn("Uploaded CAR but did not find a CID, this is very surprising and your backup cannot be recorded!")
     }
@@ -76,13 +76,19 @@ export async function backupPrefs (backupId: number, profile: ProfileViewBasic, 
     const prefs = await agent.app.bsky.actor.getPreferences()
 
     eventTarget?.dispatchEvent(new CustomEvent('prefs:uploading'))
-    const blob = new Blob([JSON.stringify(prefs.data)], { type: "application/json" })
-    if (encryptionKey) {
-        console.warn("WARNING: ENCRYPTION NOT YET IMPLEMENTED: SYMMETRIC KEY STORAGE TBD")
+    let blob = new Blob([JSON.stringify(prefs.data)], { type: "application/json" })
+    if (encryptionKey?.symkeyCid && encryptionKey?.keyPair?.privateKey) {
+        const key = await hydrateSymkey(encryptionKey)
+        const iv = window.crypto.getRandomValues(new Uint8Array(12));
+        blob = new Blob([iv, await crypto.subtle.encrypt(
+            { name: "AES-GCM", iv: iv },
+            key, 
+            await blob.arrayBuffer()
+        )])
     }
     const storachaPrefsUploadCid = await storachaClient.uploadFile(blob)
     eventTarget?.dispatchEvent(new CustomEvent('prefs:uploaded', { detail: { cid: storachaPrefsUploadCid } }))
-    await metadataStore.addPrefsDoc(storachaPrefsUploadCid.toString(), backupId, accountDid, { encryptedWith: encryptionKey?.did() })
+    await metadataStore.addPrefsDoc(storachaPrefsUploadCid.toString(), backupId, accountDid, { encryptedWith: encryptionKey?.id })
     console.log("prefs backed up")
 }
 
@@ -125,7 +131,7 @@ export async function backupBlobs (
                 storachaBlobCid.toString(), backupId, accountDid,
                 {
                     contentType: blobRes.headers['content-type'],
-                    encryptedWith: encryptionKey?.did()
+                    encryptedWith: encryptionKey?.id
                 }
             )
             i++

@@ -7,10 +7,8 @@
 import * as SPKI from './spki.js'
 import { varint } from 'multiformats'
 import { base58btc } from 'multiformats/bases/base58'
-import { Key } from '../db.js'
 
 export interface KeyPair {
-  key?: Key
   publicKey?: CryptoKey
   privateKey?: CryptoKey
   did: () => string
@@ -35,6 +33,11 @@ export const keyParams = {
   hash: { name: 'SHA-256' },
 }
 
+export const symkeyParams = {
+  name: "AES-GCM",
+  length: 256,
+}
+
 export async function calculateDID (publicKey: CryptoKey) {
   // Next we need to encode public key for the `did()` method. To do this we first export
   // Subject Public Key Info (SPKI) using web crypto API.
@@ -45,10 +48,9 @@ export async function calculateDID (publicKey: CryptoKey) {
   return `did:key:${base58btc.encode(publicBytes)}`
 }
 
-export async function keysToKeypair ({ key, publicKey, privateKey }: { key?: Key, publicKey: CryptoKey, privateKey: CryptoKey }): Promise<KeyPair> {
+export async function keysToKeypair ({ publicKey, privateKey }: { publicKey: CryptoKey, privateKey: CryptoKey }): Promise<KeyPair> {
   const did = await calculateDID(publicKey)
   return {
-    key,
     publicKey,
     privateKey,
     did: () => did,
@@ -78,10 +80,7 @@ export async function generateNewKeyPair (): Promise<KeyPair> {
 
 export async function generateNewSymkey (): Promise<CryptoKey> {
   const key = await crypto.subtle.generateKey(
-    {
-      name: "AES-GCM",
-      length: 256,
-    },
+    symkeyParams,
     true,
     ['encrypt', 'decrypt']
   )

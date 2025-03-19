@@ -10,8 +10,7 @@ import { AdjustmentsHorizontalIcon, ArrowRightCircleIcon, CircleStackIcon, Cloud
 import { useBackupsContext } from "@/contexts/backups"
 import { Blob, PrefsDoc, Repo } from "@/lib/db"
 import { Loader } from "./Loader"
-import { useKeychainContext } from "@/contexts/keychain"
-import { KeyPair } from "@/lib/crypto/keys"
+import { Key, useKeychainContext } from "@/contexts/keychain"
 import { shortenDID } from "@/lib/ui"
 import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react"
 import Keychain from "./Keychain"
@@ -19,21 +18,20 @@ import Keychain from "./Keychain"
 interface EncryptionButtonProps {
   state: boolean
   setState: (state: boolean) => unknown
-  selectedKeyPair?: KeyPair
+  selectedKey?: Key
 }
 
-function EncryptionButton ({ state, setState, selectedKeyPair }: EncryptionButtonProps) {
-  const encryptionEnabled = selectedKeyPair && state
+function EncryptionButton ({ state, setState, selectedKey }: EncryptionButtonProps) {
+  const encryptionEnabled = selectedKey && state
   return (
     <LockClosedIcon
       className={`w-6 h-6 cursor-pointer p-1 rounded-lg ${encryptionEnabled ? 'text-emerald-500 hover:bg-gray-200' : 'text-gray-500 hover:bg-gray-200'}`}
-      onClick={() => { setState(Boolean(selectedKeyPair && !state)) }} />
+      onClick={() => { setState(Boolean(selectedKey && !state)) }} />
   )
 }
 
 export default function BackupUI () {
-  const { selectedKey, keyPairs } = useKeychainContext()
-  const selectedKeyPair = selectedKey && keyPairs[selectedKey.id]
+  const { selectedKey, } = useKeychainContext()
   const { backupsStore: backupMetadataStore } = useBackupsContext()
   const [isBackingUpRepo, setIsBackingUpRepo] = useState(false)
   const [isBackingUpPrefsDoc, setIsBackingUpPrefsDoc] = useState(false)
@@ -41,7 +39,7 @@ export default function BackupUI () {
   const [selectedSpace, setSelectedSpace] = useState<Space>()
   const [currentBackupId, setCurrentBackupId] = useState<number>()
   const [encryptRepo, setEncryptRepo] = useState<boolean>(false)
-  const [encryptPrefsDoc, setEncryptPrefsDoc] = useState<boolean>(!!selectedKeyPair)
+  const [encryptPrefsDoc, setEncryptPrefsDoc] = useState<boolean>(!!selectedKey)
   const [encryptBlobs, setEncryptBlobs] = useState<boolean>(false)
 
   const [storacha] = useW3()
@@ -65,7 +63,10 @@ export default function BackupUI () {
   async function onClickInitializeBackup () {
     if (space && bluesky.userProfile && bluesky.agent && storacha.client) {
       await storacha.client.setCurrentSpace(space.did())
-      setCurrentBackupId(await initializeBackup(bluesky.userProfile, backupMetadataStore))
+      const backupId = await initializeBackup(bluesky.userProfile, backupMetadataStore)
+      setCurrentBackupId(backupId)
+    } else {
+      console.log("can't start backup", space, bluesky, storacha)
     }
   }
 
@@ -74,7 +75,7 @@ export default function BackupUI () {
     if (backupId && space && bluesky.userProfile && bluesky.agent && storacha.client) {
       setIsBackingUpRepo(true)
       await backupRepo(backupId, bluesky.userProfile, bluesky.agent, storacha.client, backupMetadataStore,
-        { eventTarget: backupEvents, encryptionKey: encryptRepo ? selectedKeyPair : undefined })
+        { eventTarget: backupEvents, encryptionKey: encryptRepo ? selectedKey : undefined })
       setIsBackingUpRepo(false)
     } else {
       console.log('not backing up, profile, agent, client:', bluesky.userProfile, bluesky.agent, storacha.client)
@@ -86,7 +87,7 @@ export default function BackupUI () {
     if (backupId && space && bluesky.userProfile && bluesky.agent && storacha.client) {
       setIsBackingUpPrefsDoc(true)
       await backupPrefs(backupId, bluesky.userProfile, bluesky.agent, storacha.client, backupMetadataStore,
-        { eventTarget: backupEvents, encryptionKey: encryptPrefsDoc ? selectedKeyPair : undefined }
+        { eventTarget: backupEvents, encryptionKey: encryptPrefsDoc ? selectedKey : undefined }
       )
       setIsBackingUpPrefsDoc(false)
     } else {
@@ -99,7 +100,7 @@ export default function BackupUI () {
     if (backupId && space && bluesky.userProfile && bluesky.agent && storacha.client) {
       setIsBackingUpBlobs(true)
       await backupBlobs(backupId, bluesky.userProfile, bluesky.agent, storacha.client, backupMetadataStore,
-        { eventTarget: backupEvents, encryptionKey: encryptBlobs ? selectedKeyPair : undefined }
+        { eventTarget: backupEvents, encryptionKey: encryptBlobs ? selectedKey : undefined }
       )
       setIsBackingUpBlobs(false)
     } else {
@@ -128,7 +129,7 @@ export default function BackupUI () {
     blobs={blobs}
     repo={repo}
     prefsDoc={prefsDoc}
-    selectedKeyPair={selectedKeyPair}
+    selectedKey={selectedKey}
   />
 }
 
@@ -156,7 +157,7 @@ export interface BackupUIViewProps {
   setEncryptPrefsDoc: (value: boolean) => unknown
   encryptBlobs: boolean
   setEncryptBlobs: (value: boolean) => unknown
-  selectedKeyPair?: KeyPair
+  selectedKey?: Key
 }
 
 export function BackupUIView ({
@@ -176,7 +177,7 @@ export function BackupUIView ({
   repo,
   blobs,
   prefsDoc,
-  selectedKeyPair
+  selectedKey
 }: BackupUIViewProps) {
   const userAuthenticatedToBothServices = bluesky.userProfile && storacha.accounts[0]
   const [backupProgressComponent, setBackupProgressComponent] = useState(
@@ -258,7 +259,7 @@ export function BackupUIView ({
                   </PopoverPanel>
                 </Popover>
                 <h3 className="font-bold uppercase text-sm">
-                  {selectedKeyPair && shortenDID(selectedKeyPair.did())}
+                  {selectedKey && shortenDID(selectedKey.id)}
                 </h3>
               </div>
               <div>
@@ -290,7 +291,7 @@ export function BackupUIView ({
               <div className="ml-8 rounded-full hover:bg-white border w-8 h-8 flex flex-col justify-center items-center">
                 <CircleStackIcon className="w-4 h-4" />
               </div>
-              <EncryptionButton state={encryptRepo} setState={setEncryptRepo} selectedKeyPair={selectedKeyPair} />
+              <EncryptionButton state={encryptRepo} setState={setEncryptRepo} selectedKey={selectedKey} />
               {isBackingUpRepo ? (
                 <Loader className="w-6 h-6" />
               ) : (
@@ -315,7 +316,7 @@ export function BackupUIView ({
               <div className="ml-8 rounded-full hover:bg-white border w-8 h-8 flex flex-col justify-center items-center">
                 <CloudIcon className="w-4 h-4" />
               </div>
-              <EncryptionButton state={encryptBlobs} setState={setEncryptBlobs} selectedKeyPair={selectedKeyPair} />
+              <EncryptionButton state={encryptBlobs} setState={setEncryptBlobs} selectedKey={selectedKey} />
               {isBackingUpBlobs ? (
                 <Loader className="w-6 h-6" />
               ) : (
@@ -343,7 +344,7 @@ export function BackupUIView ({
               <div className="ml-8 rounded-full hover:bg-white border w-8 h-8 flex flex-col justify-center items-center">
                 <AdjustmentsHorizontalIcon className="w-4 h-4" />
               </div>
-              <EncryptionButton state={encryptPrefsDoc} setState={setEncryptPrefsDoc} selectedKeyPair={selectedKeyPair} />
+              <EncryptionButton state={encryptPrefsDoc} setState={setEncryptPrefsDoc} selectedKey={selectedKey} />
               {isBackingUpPrefsDoc ? (
                 <Loader className="w-6 h-6" />
               ) : (

@@ -6,12 +6,10 @@ import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react"
 import { useForm } from "react-hook-form"
 
 import { shortenCID, shortenDID } from "@/lib/ui"
-import { KeyPair } from "@/lib/crypto/keys"
 import { KeychainContextProps, useKeychainContext } from "@/contexts/keychain"
-import type { KeyImportFn } from "@/contexts/keychain"
+import type { Key, KeyImportFn } from "@/contexts/keychain"
 import { Loader } from "./Loader"
 import CopyButton from "./CopyButton"
-import { Key } from "@/lib/db"
 
 interface KeyImportFormParams {
   keyMaterial: string
@@ -42,15 +40,14 @@ function KeyImportForm ({ dbKey, importKey }: { dbKey: Key, importKey: KeyImport
 
 interface KeyDetailsProps {
   dbKey?: Key
-  keyPair?: KeyPair
   importKey?: KeyImportFn
   onDone?: () => unknown
 }
 
-function KeyDetails ({ dbKey, keyPair, onDone, importKey }: KeyDetailsProps) {
+function KeyDetails ({ dbKey, onDone, importKey }: KeyDetailsProps) {
   const [secret, setSecret] = useState<string>()
   const [showImport, setShowImport] = useState<boolean>(false)
-
+  const keyPair = dbKey?.keyPair
   async function showSecret () {
     if (keyPair?.toSecret) {
       setSecret(await keyPair?.toSecret())
@@ -127,7 +124,6 @@ type KeychainProps = KeychainContextProps & {
 
 export function KeychainView ({
   keys = [],
-  keyPairs,
   generateKeyPair,
   setSelectedKey,
   importKey,
@@ -153,7 +149,7 @@ export function KeychainView ({
         newKey ? (
           <div>
             <h3>We&apos;ve created your new key!</h3>
-            <KeyDetails dbKey={newKey} keyPair={keyPairs[newKey.id]} onDone={() => { setNewKey(undefined) }} />
+            <KeyDetails dbKey={newKey} onDone={() => { setNewKey(undefined) }} />
           </div>
         ) : (
           <>
@@ -172,7 +168,7 @@ export function KeychainView ({
                         <Cog8ToothIcon className="w-4 h-4" />
                       </PopoverButton>
                       <PopoverPanel anchor="bottom" className="flex flex-col bg-white border rounded p-2">
-                        <KeyDetails dbKey={key} keyPair={keyPairs[key.id]} importKey={importKey} />
+                        <KeyDetails dbKey={key} importKey={importKey} />
                       </PopoverPanel>
                     </Popover>
                     <button className="outline-none cursor-pointer hover:bg-gray-100 p-2" onClick={() => forgetKey(key)}>
