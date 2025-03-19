@@ -32,6 +32,35 @@ export async function initializeBackup (profile: ProfileViewBasic, metadataStore
     return await metadataStore.addBackup(accountDid)
 }
 
+/**
+ * Hydrate the encryption key from the Key metadata and use
+ * it to AES-GCM decrypt the data. A random 12 byte nonce is taken from the front
+ * of the given buffer and the rest of the data is passed to the decryption
+ * algorithm.
+ */
+export async function decrypt (key: Key, buffer: ArrayBuffer): Promise<ArrayBuffer> {
+    const decryptionKey = await hydrateSymkey(key)
+    const iv = buffer.slice(0, 12)
+    const encryptedBytes = buffer.slice(12)
+    return await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, decryptionKey, encryptedBytes)
+}
+
+/**
+ * Hydrate the encryption key from the Key metadata and use
+ * it to AES-GCM encrypt the data. A random 12 byte nonce is generated
+ * and prepended to the ArrayBuffer returned by `encrypt`, and the resulting
+ * data is returned as a Blob.
+ */
+export async function encrypt (key: Key, blob: Blob): Promise<Blob> {
+    const encryptionKey = await hydrateSymkey(key)
+    const iv = window.crypto.getRandomValues(new Uint8Array(12));
+    return new Blob([iv, await crypto.subtle.encrypt(
+        { name: "AES-GCM", iv: iv },
+        encryptionKey,
+        await blob.arrayBuffer()
+    )])
+}
+
 export async function backupRepo (
     backupId: number,
     profile: ProfileViewBasic, agent: Agent,
@@ -48,24 +77,24 @@ export async function backupRepo (
     eventTarget?.dispatchEvent(new CustomEvent('repo:fetching', { detail: { did: accountDid } }))
     const repoRes = await agent.com.atproto.sync.getRepo({ did: accountDid })
     console.log("got repo with headers", repoRes.headers)
+    let blob = new Blob([repoRes.data])
     if (encryptionKey) {
-        console.warn("WARNING: ENCRYPTION NOT YET IMPLEMENTED: SYMMETRIC KEY STORAGE TBD")
+        blob = await encrypt(encryptionKey, blob)
     }
     eventTarget?.dispatchEvent(new CustomEvent('repo:uploading'))
     let storachaRepoCid: CARLink | undefined;
-    const storachaUploadCid = await storachaClient.uploadCAR(new Blob([repoRes.data]), {
-        onShardStored: (carMetadata) => {
-            storachaRepoCid = carMetadata.cid
-        },
-        // set shard size to 4 GiB - the maximum shard size
-        shardSize: 1024 * 1024 * 1024 * 4
-    })
+    const storachaUploadCid = encryptionKey ?
+        await storachaClient.uploadFile(blob) :
+        await storachaClient.uploadCAR(blob, {
+            onShardStored: (carMetadata) => {
+                storachaRepoCid = carMetadata.cid
+            },
+            // set shard size to 4 GiB - the maximum shard size
+            shardSize: 1024 * 1024 * 1024 * 4
+        })
     eventTarget?.dispatchEvent(new CustomEvent('repo:uploaded', { detail: { cid: storachaRepoCid } }))
-    if (storachaRepoCid) {
-        await metadataStore.addRepo(storachaRepoCid.toString(), storachaUploadCid.toString(), backupId, accountDid, latestCommit, { encryptedWith: encryptionKey?.id })
-    } else {
-        console.warn("Uploaded CAR but did not find a CID, this is very surprising and your backup cannot be recorded!")
-    }
+    await metadataStore.addRepo(storachaUploadCid.toString(), backupId, accountDid, latestCommit, { encryptedWith: encryptionKey?.id, repoCid: storachaRepoCid?.toString() })
+
     console.log("repo backed up")
 }
 
@@ -76,15 +105,9 @@ export async function backupPrefs (backupId: number, profile: ProfileViewBasic, 
     const prefs = await agent.app.bsky.actor.getPreferences()
 
     eventTarget?.dispatchEvent(new CustomEvent('prefs:uploading'))
-    let blob = new Blob([JSON.stringify(prefs.data)], { type: "application/json" })
+    let blob = new Blob([new TextEncoder().encode(JSON.stringify(prefs.data))], { type: "application/json" })
     if (encryptionKey?.symkeyCid && encryptionKey?.keyPair?.privateKey) {
-        const key = await hydrateSymkey(encryptionKey)
-        const iv = window.crypto.getRandomValues(new Uint8Array(12));
-        blob = new Blob([iv, await crypto.subtle.encrypt(
-            { name: "AES-GCM", iv: iv },
-            key, 
-            await blob.arrayBuffer()
-        )])
+        blob = await encrypt(encryptionKey, blob)
     }
     const storachaPrefsUploadCid = await storachaClient.uploadFile(blob)
     eventTarget?.dispatchEvent(new CustomEvent('prefs:uploaded', { detail: { cid: storachaPrefsUploadCid } }))
@@ -121,11 +144,12 @@ export async function backupBlobs (
                 did: accountDid,
                 cid,
             })
+            let blob = new Blob([blobRes.data])
             if (encryptionKey) {
-                console.warn("WARNING: ENCRYPTION NOT YET IMPLEMENTED: SYMMETRIC KEY STORAGE TBD")
+                blob = await encrypt(encryptionKey, blob)
             }
             eventTarget?.dispatchEvent(new CustomEvent('blob:uploading', { detail: { cid, i, count: listedBlobs.data.cids.length } }))
-            const storachaBlobCid = await storachaClient.uploadFile(new Blob([blobRes.data]))
+            const storachaBlobCid = await storachaClient.uploadFile(blob)
             eventTarget?.dispatchEvent(new CustomEvent('blob:uploaded', { detail: { cid: storachaBlobCid, i, count: listedBlobs.data.cids.length } }))
             await metadataStore.addBlob(
                 storachaBlobCid.toString(), backupId, accountDid,

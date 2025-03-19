@@ -2,10 +2,10 @@
 
 import db, { Blob, PrefsDoc, Repo } from "@/lib/db"
 import { Agent, CredentialSession } from '@atproto/api'
-import { blueskyClientMetadata } from "@/lib/bluesky"
+import { blueskyClientMetadata, decrypt } from "@/lib/bluesky"
 import { useLiveQuery } from "dexie-react-hooks"
 import { OAuthSession, BrowserOAuthClient } from "@atproto/oauth-client-browser";
-import { ATPROTO_DEFAULT_SINK, ATPROTO_DEFAULT_SOURCE, GATEWAY_HOST, REQUIRED_ATPROTO_SCOPE } from "@/lib/constants";
+import { ATPROTO_DEFAULT_SINK, ATPROTO_DEFAULT_SOURCE, REQUIRED_ATPROTO_SCOPE } from "@/lib/constants";
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { Secp256k1Keypair } from "@atproto/crypto"
@@ -13,8 +13,9 @@ import { AdjustmentsHorizontalIcon, ArrowRightCircleIcon, CircleStackIcon, Cloud
 import { Loader } from "./Loader"
 import { shorten, shortenDID } from "@/lib/ui"
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react'
-import { hydrateSymkey, Key, useKeychainContext } from "@/contexts/keychain"
+import { Key, useKeychainContext } from "@/contexts/keychain"
 import Keychain from "./Keychain"
+import { cidUrl } from "@/lib/storacha"
 
 type LoginFn = (identifier: string, password: string, options?: { server?: string }) => Promise<void>
 
@@ -199,9 +200,10 @@ export default function RestoreDialog ({ backupId }: { backupId: number }) {
   async function restoreRepo () {
     if (repo && sinkAgent) {
       setIsRestoringRepo(true)
-      console.log("restoring", repo.cid)
-      const response = await fetch(`${GATEWAY_HOST}/ipfs/${repo.cid}`)
-      await sinkAgent.com.atproto.repo.importRepo(new Uint8Array(await response.arrayBuffer()), {
+      console.log("restoring repo", repo.cid)
+      await sinkAgent.com.atproto.repo.importRepo(new Uint8Array(
+        await loadCid(repo.cid, repo.encryptedWith)
+      ), {
         encoding: 'application/vnd.ipld.car',
       })
       setIsRestoringRepo(false)
@@ -215,9 +217,10 @@ export default function RestoreDialog ({ backupId }: { backupId: number }) {
     if (blobs && sinkAgent) {
       setIsRestoringBlobs(true)
       for (const blob of blobs) {
-        console.log("restoring", blob.cid)
-        const response = await fetch(`${GATEWAY_HOST}/ipfs/${blob.cid}`)
-        await sinkAgent.com.atproto.repo.uploadBlob(new Uint8Array(await response.arrayBuffer()), {
+        console.log("restoring blob", blob.cid)
+        await sinkAgent.com.atproto.repo.uploadBlob(new Uint8Array(
+          await loadCid(blob.cid, blob.encryptedWith)
+        ), {
           encoding: blob.contentType,
         })
       }
@@ -228,34 +231,26 @@ export default function RestoreDialog ({ backupId }: { backupId: number }) {
     }
   }
 
-  async function loadPrefsDoc () {
-    if (prefsDoc) {
-      const response = await fetch(`${GATEWAY_HOST}/ipfs/${prefsDoc.cid}`)
-      let prefs
-      if (prefsDoc.encryptedWith) {
-        const key = keys.find(k => k.id === prefsDoc.encryptedWith)
-        if (!key) {
-          throw new Error('could not find key')
-        } else {
-          const decryptionKey = await hydrateSymkey(key)
-          const storedBytes = await response.arrayBuffer()
-          const iv = storedBytes.slice(0, 12)
-          const encryptedBytes = storedBytes.slice(12)
-          const jsonBytes = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, decryptionKey, encryptedBytes)
-          prefs = JSON.parse(new TextDecoder().decode(jsonBytes))
-        }
+  async function loadCid (cid: string, encryptedWith?: string): Promise<ArrayBuffer> {
+    const response = await fetch(cidUrl(cid))
+    if (encryptedWith) {
+      const key = keys.find(k => k.id === encryptedWith)
+      if (!key) {
+        throw new Error('could not find key')
       } else {
-        prefs = await response.json()
+        return await decrypt(key, await response.arrayBuffer())
       }
-      return prefs
+    } else {
+      return await response.arrayBuffer()
     }
   }
 
   async function restorePrefsDoc () {
     if (prefsDoc && sinkAgent) {
       setIsRestoringPrefsDoc(true)
-      console.log("restoring", prefsDoc.cid)
-      const prefs = await loadPrefsDoc()
+      const prefs = JSON.parse(new TextDecoder().decode(
+        await loadCid(prefsDoc.cid, prefsDoc.encryptedWith))
+      )
       await sinkAgent.app.bsky.actor.putPreferences(prefs)
       setIsRestoringPrefsDoc(false)
       setIsPrefsDocRestored(true)
@@ -280,7 +275,6 @@ export default function RestoreDialog ({ backupId }: { backupId: number }) {
 
   return (
     <>
-      <button onClick={async () => console.log(await loadPrefsDoc())}>LOAD</button>
       <RestoreDialogView
         keys={keys}
         sourceSession={sourceSession}

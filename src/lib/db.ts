@@ -10,7 +10,7 @@ export interface Backup {
 
 export interface Repo {
   cid: string;
-  uploadCid: string;
+  repoCid?: string;
   backupId: number;
   accountDid: string;
   commit: string;
@@ -68,7 +68,7 @@ function newDB (name: string = 'storacha-bluesky-backups') {
   // Schema declaration:
   db.version(1).stores({
     backups: 'id++, accountDid, createdAt',
-    repos: 'cid, uploadCid, backupId, accountDid, commit, createdAt, encryptedWith',
+    repos: 'cid, repoCid, backupId, accountDid, commit, createdAt, encryptedWith',
     prefsDocs: 'cid, backupId, accountDid, createdAt, encryptedWith',
     blobs: 'cid, contentType, backupId, accountDid, createdAt, encryptedWith',
     keys: 'id, symkeyCid'

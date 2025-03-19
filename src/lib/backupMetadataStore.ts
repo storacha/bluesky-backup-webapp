@@ -4,7 +4,9 @@ interface EncryptableOptions {
   encryptedWith?: string
 }
 
-type RepoOptions = EncryptableOptions
+type RepoOptions = EncryptableOptions & {
+  repoCid?: string
+}
 type PrefsDocOptions = EncryptableOptions
 
 type BlobOptions = EncryptableOptions & {
@@ -12,7 +14,7 @@ type BlobOptions = EncryptableOptions & {
 }
 
 export interface BackupMetadataStore {
-  addRepo: (cid: string, uploadCid: string, backupId: number, accountDid: string, commit: string, opts?: RepoOptions) => Promise<void>
+  addRepo: (cid: string, backupId: number, accountDid: string, commit: string, opts?: RepoOptions) => Promise<void>
   addPrefsDoc: (cid: string, backupId: number, accountDid: string, opts?: PrefsDocOptions) => Promise<void>
   addBlob: (cid: string, backupId: number, accountDid: string, opts?: BlobOptions) => Promise<void>
   addBackup: (accountDid: string) => Promise<number>
@@ -28,8 +30,8 @@ export interface BackupMetadataStore {
 type BackupMetadataStoreInitializer = (db: BackupsDB) => BackupMetadataStore
 
 export const newBackupMetadataStore: BackupMetadataStoreInitializer = (db) => ({
-  async addRepo (cid, uploadCid, backupId, accountDid, commit, { encryptedWith } = {}) {
-    await db.repos.put({ cid, uploadCid, backupId, accountDid, commit, createdAt: new Date(), encryptedWith })
+  async addRepo (cid, backupId, accountDid, commit, { encryptedWith, repoCid } = {}) {
+    await db.repos.put({ cid, repoCid, backupId, accountDid, commit, createdAt: new Date(), encryptedWith })
   },
   async addPrefsDoc (cid, backupId, accountDid, { encryptedWith } = {}) {
     await db.prefsDocs.put({ cid, backupId, accountDid, createdAt: new Date(), encryptedWith })

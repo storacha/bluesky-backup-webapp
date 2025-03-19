@@ -7,7 +7,7 @@ import { useBackupsContext } from "./backups";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useW3 } from "@w3ui/react";
 import { KeyMeta } from "@/lib/db";
-import { GATEWAY_HOST } from "@/lib/constants";
+import { cidUrl } from "@/lib/storacha";
 
 export type Key = KeyMeta & {
   keyPair?: KeyPair
@@ -26,7 +26,7 @@ export type KeychainContextProps = {
 
 export async function hydrateSymkey (key: Key) {
   if (key.symkeyCid && key.keyPair?.privateKey) {
-    const resp = await fetch(`${GATEWAY_HOST}/ipfs/${key.symkeyCid}`)
+    const resp = await fetch(cidUrl(key.symkeyCid))
     const keyBytes = await crypto.subtle.decrypt(
       keyParams,
       key.keyPair.privateKey,
