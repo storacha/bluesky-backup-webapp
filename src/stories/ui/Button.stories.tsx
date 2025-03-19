@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import Button from '@/components/Button';
+import { ArrowRightIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
 
-const meta: Meta<typeof Button> = {
+const meta = {
   title: 'UI/Button',
   component: Button,
   parameters: {
@@ -13,20 +14,14 @@ const meta: Meta<typeof Button> = {
       control: 'select',
       options: ['primary', 'secondary', 'outline', 'ghost'],
     },
-    isLoading: {
-      control: 'boolean',
-    },
-    isFullWidth: {
-      control: 'boolean',
-    },
-    disabled: {
-      control: 'boolean',
-    },
+    isLoading: { control: 'boolean' },
+    isFullWidth: { control: 'boolean' },
+    disabled: { control: 'boolean' },
   },
-};
+} satisfies Meta<typeof Button>;
 
 export default meta;
-type Story = StoryObj<typeof Button>;
+type Story = StoryObj<typeof meta>;
 
 export const Primary: Story = {
   args: {
@@ -75,18 +70,33 @@ export const FullWidth: Story = {
     children: 'Full Width Button',
     isFullWidth: true,
   },
-  parameters: {
-    layout: 'padded',
+};
+
+export const WithLeftIcon: Story = {
+  args: {
+    children: 'Left Icon',
+    leftIcon: <ArrowRightIcon className="h-4 w-4" />,
   },
 };
 
-export const AllVariants: Story = {
-  render: () => (
-    <div className="flex flex-col gap-4">
-      <Button variant="primary">Primary Button</Button>
-      <Button variant="secondary">Secondary Button</Button>
-      <Button variant="outline">Outline Button</Button>
-      <Button variant="ghost">Ghost Button</Button>
-    </div>
-  ),
+export const WithRightIcon: Story = {
+  args: {
+    children: 'Right Icon',
+    rightIcon: <ChevronDownIcon className="h-4 w-4" />,
+  },
+};
+
+export const WithBothIcons: Story = {
+  args: {
+    children: 'Both Icons',
+    leftIcon: <ArrowRightIcon className="h-4 w-4" />,
+    rightIcon: <ChevronDownIcon className="h-4 w-4" />,
+  },
+};
+
+export const IconOnly: Story = {
+  args: {
+    leftIcon: <ArrowRightIcon className="h-4 w-4" />,
+    'aria-label': 'Next',
+  },
 };
