@@ -38,13 +38,13 @@ export default function RootProviders ({
   return (
     <QueryClientProvider client={queryClient}>
       <BackupsProvider>
-        <KeychainProvider>
-          <BskyAuthProvider>
-            <StorachaAuthProvider>
+        <StorachaAuthProvider>
+          <KeychainProvider>
+            <BskyAuthProvider>
               {children}
-            </StorachaAuthProvider>
-          </BskyAuthProvider>
-        </KeychainProvider>
+            </BskyAuthProvider>
+          </KeychainProvider>
+        </StorachaAuthProvider>
       </BackupsProvider>
     </QueryClientProvider>
   );

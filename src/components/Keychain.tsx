@@ -5,24 +5,25 @@ import { useState } from "react"
 import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react"
 import { useForm } from "react-hook-form"
 
-import { shortenDID } from "@/lib/ui"
+import { shortenCID, shortenDID } from "@/lib/ui"
 import { KeyPair } from "@/lib/crypto/keys"
 import { KeychainContextProps, useKeychainContext } from "@/contexts/keychain"
 import type { KeyImportFn } from "@/contexts/keychain"
 import { Loader } from "./Loader"
 import CopyButton from "./CopyButton"
+import { Key } from "@/lib/db"
 
 interface KeyImportFormParams {
   keyMaterial: string
 }
 
-function KeyImportForm ({ importKey }: { importKey: KeyImportFn }) {
+function KeyImportForm ({ dbKey, importKey }: { dbKey: Key, importKey: KeyImportFn }) {
   const {
     register,
     handleSubmit,
   } = useForm<KeyImportFormParams>()
   async function submit (data: KeyImportFormParams) {
-    await importKey(data.keyMaterial)
+    await importKey(dbKey, data.keyMaterial)
   }
   return (
     <form onSubmit={handleSubmit(submit)}
@@ -40,12 +41,13 @@ function KeyImportForm ({ importKey }: { importKey: KeyImportFn }) {
 }
 
 interface KeyDetailsProps {
-  keyPair: KeyPair
+  dbKey?: Key
+  keyPair?: KeyPair
   importKey?: KeyImportFn
   onDone?: () => unknown
 }
 
-function KeyDetails ({ keyPair, onDone, importKey }: KeyDetailsProps) {
+function KeyDetails ({ dbKey, keyPair, onDone, importKey }: KeyDetailsProps) {
   const [secret, setSecret] = useState<string>()
   const [showImport, setShowImport] = useState<boolean>(false)
 
@@ -59,21 +61,25 @@ function KeyDetails ({ keyPair, onDone, importKey }: KeyDetailsProps) {
   function hideSecret () {
     setSecret(undefined)
   }
-  async function importAndClose (keyMaterial: string) {
+  async function importAndClose (key: Key, keyMaterial: string) {
     if (importKey) {
-      await importKey(keyMaterial)
+      await importKey(key, keyMaterial)
       setShowImport(false)
     } else {
       console.warn('importKey was not defined, cannot import key')
     }
 
   }
+  const did = dbKey?.id || keyPair?.did()
   return (
     <div className="flex flex-col space-y-4">
-      <h3 className="font-bold text-xs uppercase">Key DID: {shortenDID(keyPair.did())}</h3>
-      {(showImport && importKey) ? (
+      {did && (<h3 className="font-bold text-xs uppercase">Key DID: {shortenDID(did)}</h3>)}
+      {dbKey?.symkeyCid && (
+        <h3 className="font-bold text-xs uppercase">Symkey CID: {shortenCID(dbKey.symkeyCid)}</h3>
+      )}
+      {(showImport && importKey && dbKey) ? (
         <div>
-          <KeyImportForm importKey={importAndClose} />
+          <KeyImportForm dbKey={dbKey} importKey={importAndClose} />
         </div>
       ) : (
         secret ? (
@@ -92,12 +98,12 @@ function KeyDetails ({ keyPair, onDone, importKey }: KeyDetailsProps) {
           </div>
         ) : (
           <div>
-            {!keyPair.publicKey && (
+            {!keyPair?.publicKey && (
               <button className="btn" onClick={() => { setShowImport(true) }}>
                 Import Key
               </button>
             )}
-            {keyPair.privateKey && (
+            {keyPair?.privateKey && (
               <button className="btn" onClick={showSecret}>
                 Show Secret
               </button>
@@ -120,65 +126,65 @@ type KeychainProps = KeychainContextProps & {
 }
 
 export function KeychainView ({
-  keyPairs = [],
+  keys = [],
+  keyPairs,
   generateKeyPair,
-  setSelectedKeyPair,
+  setSelectedKey,
   importKey,
   forgetKey,
   className
 }: KeychainProps) {
   const [generatingKeyPair, setGeneratingKeyPair] = useState(false)
-  const [newKeyPair, setNewKeyPair] = useState<KeyPair>()
+  const [newKey, setNewKey] = useState<Key>()
   async function onClickAdd () {
     if (generateKeyPair) {
       setGeneratingKeyPair(true)
-      setNewKeyPair(await generateKeyPair())
+      setNewKey(await generateKeyPair())
       setGeneratingKeyPair(false)
     } else {
       console.warn('could not generate key pair, generator function is not defined')
     }
   }
-
   return (
     <div className={className}>
-      {newKeyPair ? (
-        generatingKeyPair ? (
-          <Loader />
-        ) : (
+      {generatingKeyPair ? (
+        <Loader />
+      ) : (
+        newKey ? (
           <div>
             <h3>We&apos;ve created your new key!</h3>
-            <KeyDetails keyPair={newKeyPair} onDone={() => { setNewKeyPair(undefined) }} />
+            <KeyDetails dbKey={newKey} keyPair={keyPairs[newKey.id]} onDone={() => { setNewKey(undefined) }} />
           </div>
-        )
-      ) : (
-        <>
-          <PlusIcon onClick={onClickAdd} className="w-6 h-6 cursor-pointer hover:bg-gray-200" />
-          <div className="flex flex-col">
-            {
-              keyPairs.map((keyPair, i) => (
-                <div key={i} className="flex flex-row space-x-2 items-center odd:bg-gray-100/80">
-                  <div className="w-52 hover:bg-gray-200 cursor-pointer"
-                    onClick={() => { setSelectedKeyPair(keyPair) }}>
-                    {shortenDID(keyPair.did())}
-                  </div>
-                  <CopyButton text={keyPair.did()} />
-                  <Popover className="relative flex items-center">
-                    <PopoverButton className="outline-none cursor-pointer hover:bg-gray-100 p-2">
-                      <Cog8ToothIcon className="w-4 h-4" />
-                    </PopoverButton>
-                    <PopoverPanel anchor="bottom" className="flex flex-col bg-white border rounded p-2">
-                      <KeyDetails keyPair={keyPair} importKey={importKey} />
-                    </PopoverPanel>
-                  </Popover>
-                  <button className="outline-none cursor-pointer hover:bg-gray-100 p-2" onClick={() => forgetKey(keyPair)}>
-                    <TrashIcon className="w-4 h-4" />
-                  </button>
+        ) : (
+          <>
+            <PlusIcon onClick={onClickAdd} className="w-6 h-6 cursor-pointer hover:bg-gray-200" />
+            <div className="flex flex-col">
+              {
+                keys.map((key, i) => (
+                  <div key={i} className="flex flex-row space-x-2 items-center odd:bg-gray-100/80">
+                    <div className="w-52 hover:bg-gray-200 cursor-pointer"
+                      onClick={() => { setSelectedKey(key) }}>
+                      {shortenDID(key.id)}
+                    </div>
+                    <CopyButton text={key.id} />
+                    <Popover className="relative flex items-center">
+                      <PopoverButton className="outline-none cursor-pointer hover:bg-gray-100 p-2">
+                        <Cog8ToothIcon className="w-4 h-4" />
+                      </PopoverButton>
+                      <PopoverPanel anchor="bottom" className="flex flex-col bg-white border rounded p-2">
+                        <KeyDetails dbKey={key} keyPair={keyPairs[key.id]} importKey={importKey} />
+                      </PopoverPanel>
+                    </Popover>
+                    <button className="outline-none cursor-pointer hover:bg-gray-100 p-2" onClick={() => forgetKey(key)}>
+                      <TrashIcon className="w-4 h-4" />
+                    </button>
 
-                </div>
-              ))
-            }
-          </div>
-        </>
+                  </div>
+                ))
+              }
+            </div>
+          </>
+        )
       )
       }
     </div >

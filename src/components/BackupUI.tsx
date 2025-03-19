@@ -32,7 +32,8 @@ function EncryptionButton ({ state, setState, selectedKeyPair }: EncryptionButto
 }
 
 export default function BackupUI () {
-  const { selectedKeyPair } = useKeychainContext()
+  const { selectedKey, keyPairs } = useKeychainContext()
+  const selectedKeyPair = selectedKey && keyPairs[selectedKey.id]
   const { backupsStore: backupMetadataStore } = useBackupsContext()
   const [isBackingUpRepo, setIsBackingUpRepo] = useState(false)
   const [isBackingUpPrefsDoc, setIsBackingUpPrefsDoc] = useState(false)

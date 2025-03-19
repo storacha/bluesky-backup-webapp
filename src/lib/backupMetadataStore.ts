@@ -16,7 +16,7 @@ export interface BackupMetadataStore {
   addPrefsDoc: (cid: string, backupId: number, accountDid: string, opts?: PrefsDocOptions) => Promise<void>
   addBlob: (cid: string, backupId: number, accountDid: string, opts?: BlobOptions) => Promise<void>
   addBackup: (accountDid: string) => Promise<number>
-  addKey: (id: string) => Promise<void>
+  addKey: (id: string, symkeyCid: string) => Promise<Key>
   listBackups: () => Promise<Backup[]>
   getRepo: (backupId: number) => Promise<Repo | undefined>
   listBlobs: (backupId: number) => Promise<Blob[]>
@@ -40,8 +40,10 @@ export const newBackupMetadataStore: BackupMetadataStoreInitializer = (db) => ({
   async addBackup (accountDid) {
     return await db.backups.add({ accountDid, createdAt: new Date() })
   },
-  async addKey (id: string) {
-    await db.keys.put({ id })
+  async addKey (id, symkeyCid) {
+    const value = { id, symkeyCid }
+    await db.keys.put(value)
+    return value
   },
   async listBackups () {
     return db.backups.toArray()
