@@ -2,7 +2,6 @@
 
 import React from 'react';
 
-import './button.css';
 import { useBskyAuthContext } from '@/contexts';
 import { Loader } from '@/components/Loader';
 import StorachaAuthenticator from '@/components/StorachaAuthenticator';
@@ -12,6 +11,8 @@ import BackupUI from '@/components/BackupUI';
 import { useBackupsContext } from '@/contexts/backups';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Backups } from '@/components/Backups';
+import { usePlan } from '@/app/hooks';
+import StripePricingTable from '@/components/StripePricingTable';
 
 export const Dashboard = () => {
   const bluesky = useBskyAuthContext()
@@ -19,13 +20,29 @@ export const Dashboard = () => {
   const { backupsStore } = useBackupsContext()
   const backups = useLiveQuery(() => backupsStore.listBackups())
   const { serviceResolver } = useBskyAuthContext()
+  const storachaAccount = storacha.accounts?.[0]
+  const { data, isLoading: planIsLoading } = usePlan(storachaAccount)
+  const plan = data?.product
   return (
     <div className="flex flex-col space-y-4 items-start mt-16">
       <div className="bg-white/80 backdrop-blur-3xl p-16 rounded border border-bluesky-blue">
         {bluesky.initialized ? (
           bluesky.authenticated ? (
-            storacha.accounts?.[0] ? (
-              <BackupUI />
+            storachaAccount ? (
+              planIsLoading ? (
+                <div className="w-100">
+                  <Loader />
+                </div>
+              ) : (
+                plan ? (
+                  <BackupUI />
+                ) : (
+                  <div className="min-w-5xl">
+                    Sign up for a Storacha plan to continue!
+                    <StripePricingTable />
+                  </div>
+                )
+              )
             ) : (
               <div className="flex flex-col items-center">
                 <h4 className="mb-4 font-bold">Next, please log in to your Storacha account:</h4>
@@ -42,7 +59,9 @@ export const Dashboard = () => {
             </div>
           )
         ) : (
-          <Loader />
+          <div className="w-100">
+            <Loader />
+          </div>
         )}
       </div>
       <div className="w-full bg-white/80 backdrop-blur-3xl p-16 rounded border border-bluesky-blue">
@@ -52,7 +71,11 @@ export const Dashboard = () => {
         ) : (
           <span>You have not yet created any backups.</span>
         )) : (
-          <Loader />
+          // we should wrap loader in a container with a fixed width
+          // to avoid layout-shifts
+          <div className="w-100">
+            <Loader />
+          </div>
         )}
       </div>
     </div>

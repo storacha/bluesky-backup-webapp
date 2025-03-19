@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
-import { Dashboard } from './Dashboard';
+import { Dashboard } from '../components/Dashboard';
 import { Context as StorachaContext } from '@w3ui/react';
 import { withReactContext } from 'storybook-react-context'
 import { BskyAuthContext as BlueskyContext } from '@/contexts';
@@ -9,7 +9,7 @@ import { backupMetadataStore } from '@/lib/backupMetadataStore';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
 const meta = {
-  title: 'Dashboard',
+  title: 'components/Dashboard',
   component: Dashboard,
   parameters: {
     // Optional parameter to center the component in the Canvas. More info: https://storybook.js.org/docs/configure/story-layout
@@ -82,7 +82,32 @@ export const StorachaAuthenticated: Story = {
     withReactContext({
       context: StorachaContext,
       contextValue: [{
-        accounts: [{}],
+        accounts: [{
+          did: () => 'did:mailto:example.com:test',
+          toEmail: () => 'test@example.com',
+          plan: { get: () => ({ ok: null }) }
+        }],
+        client: {},
+        spaces: []
+      }]
+    })
+  ]
+};
+
+export const StorachaAuthenticatedWithPlan: Story = {
+  decorators: [
+    withReactContext({
+      context: BlueskyContext,
+      contextValue: { initialized: true, authenticated: true, userProfile: {} }
+    }),
+    withReactContext({
+      context: StorachaContext,
+      contextValue: [{
+        accounts: [{
+          did: () => 'did:mailto:example.com:test',
+          toEmail: () => 'test@example.com',
+          plan: { get: () => ({ ok: { product: 'did:web:test' } }) }
+        }],
         client: {},
         spaces: []
       }]
@@ -99,9 +124,14 @@ export const StorachaAuthenticatedWithSpaces: Story = {
     withReactContext({
       context: StorachaContext,
       contextValue: [{
-        accounts: [{}],
+        accounts: [{
+          did: () => 'did:mailto:example.com:test',
+
+          toEmail: () => 'test@example.com',
+          plan: { get: () => ({ ok: { product: 'did:web:test' } }) }
+        }],
         client: {},
-        spaces: [{did: () => "did:key:bafybeiabc123"}]
+        spaces: [{ did: () => "did:key:bafybeiabc123" }]
       }]
     })
   ]
@@ -116,9 +146,12 @@ export const StorachaAuthenticatedWithBackups: Story = {
     withReactContext({
       context: StorachaContext,
       contextValue: [{
-        accounts: [{}],
+        accounts: [{
+          did: () => 'did:mailto:test:example.com',
+          plan: { get: () => ({ ok: { product: 'did:web:test' } }) }
+        }],
         client: {},
-        spaces: [{did: () => "did:key:bafybeiabc123"}]
+        spaces: [{ did: () => "did:key:bafybeiabc123" }]
       }]
     }),
     withReactContext({

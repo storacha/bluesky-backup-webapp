@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
-import { DashboardPage } from './DashboardPage';
+import { DashboardPage } from '../components/DashboardPage';
 import { Context as StorachaContext } from '@w3ui/react';
 import { withReactContext } from 'storybook-react-context'
 import { BskyAuthContext as BlueskyContext } from '@/contexts';
@@ -9,7 +9,7 @@ import { backupMetadataStore } from '@/lib/backupMetadataStore';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
 const meta = {
-  title: 'DashboardPage',
+  title: 'pages/DashboardPage',
   component: DashboardPage,
   parameters: {
     // Optional parameter to center the component in the Canvas. More info: https://storybook.js.org/docs/configure/story-layout
@@ -46,7 +46,10 @@ export const StorachaAuthenticatedWithBackups: Story = {
     withReactContext({
       context: StorachaContext,
       contextValue: [{
-        accounts: [{}],
+        accounts: [{
+          did: () => "did:mailto:example.com:test",
+          toEmail: () => "test@example.com"
+        }],
         client: {},
         spaces: [{did: () => "did:key:bafybeiabc123"}]
       }]
