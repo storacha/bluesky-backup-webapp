@@ -19,6 +19,7 @@ export const Dashboard = () => {
   const [storacha] = useW3()
   const { backupsStore } = useBackupsContext()
   const backups = useLiveQuery(() => backupsStore.listBackups())
+  const { serviceResolver } = useBskyAuthContext()
   const storachaAccount = storacha.accounts?.[0]
   const { data, isLoading: planIsLoading } = usePlan(storachaAccount)
   const plan = data?.product
@@ -52,7 +53,7 @@ export const Dashboard = () => {
             <div>
               <h3 className="text-2xl font-bold mb-16">Welcome to <span className="text-storacha-red">HOT</span> Bluesky Backups by Storacha!</h3>
               <div className="flex flex-col items-center">
-                <h4 className="mb-4 font-bold">To get started, please log in to your Bluesky account:</h4>
+                <h4 className="mb-4 font-bold">To get started, please log in to your {serviceResolver === "https://bsky.social" ? "Bluesky" : "PDS"} account:</h4>
                 <BlueskyAuthenticator />
               </div>
             </div>
