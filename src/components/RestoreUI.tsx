@@ -2,18 +2,21 @@
 
 import db, { Blob, PrefsDoc, Repo } from "@/lib/db"
 import { Agent, CredentialSession } from '@atproto/api'
-import { blueskyClientMetadata } from "@/lib/bluesky"
+import { blueskyClientMetadata, decrypt } from "@/lib/bluesky"
 import { useLiveQuery } from "dexie-react-hooks"
 import { OAuthSession, BrowserOAuthClient } from "@atproto/oauth-client-browser";
-import { ATPROTO_DEFAULT_SINK, ATPROTO_DEFAULT_SOURCE, GATEWAY_HOST, REQUIRED_ATPROTO_SCOPE } from "@/lib/constants";
+import { ATPROTO_DEFAULT_SINK, ATPROTO_DEFAULT_SOURCE, REQUIRED_ATPROTO_SCOPE } from "@/lib/constants";
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { Secp256k1Keypair } from "@atproto/crypto"
-import { AdjustmentsHorizontalIcon, ArrowRightCircleIcon, CircleStackIcon, CloudIcon, IdentificationIcon } from "@heroicons/react/20/solid"
+import { AdjustmentsHorizontalIcon, ArrowRightCircleIcon, CircleStackIcon, CloudIcon, IdentificationIcon, KeyIcon } from "@heroicons/react/20/solid"
 import { shorten, shortenDID } from "@/lib/ui"
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react'
 import Button from "./Button"
 import Input from "./Input"
+import { Key, useKeychainContext } from "@/contexts/keychain"
+import Keychain from "./Keychain"
+import { cidUrl } from "@/lib/storacha"
 
 type LoginFn = (identifier: string, password: string, options?: { server?: string }) => Promise<void>
 
@@ -28,7 +31,7 @@ interface AtprotoLoginFormProps {
   defaultServer?: string
 }
 
-interface PlcTokenForm {
+interface PlcTokenFormParams {
   token: string
 }
 
@@ -62,6 +65,7 @@ export async function oauthToPds (pdsUrl: string, handle: string) {
 }
 
 interface RestoreDialogViewProps {
+  keys: Key[]
   sourceSession?: CredentialSession
   sinkSession?: CredentialSession
   loginToSource: LoginFn
@@ -89,6 +93,7 @@ interface RestoreDialogViewProps {
 }
 
 export default function RestoreDialog ({ backupId }: { backupId: number }) {
+  const { keys } = useKeychainContext()
   const repo = useLiveQuery(() => db.
     repos.where('backupId').equals(backupId).first())
   const blobs = useLiveQuery(() => db.
@@ -196,9 +201,10 @@ export default function RestoreDialog ({ backupId }: { backupId: number }) {
   async function restoreRepo () {
     if (repo && sinkAgent) {
       setIsRestoringRepo(true)
-      console.log("restoring", repo.cid)
-      const response = await fetch(`${GATEWAY_HOST}/ipfs/${repo.cid}`)
-      await sinkAgent.com.atproto.repo.importRepo(new Uint8Array(await response.arrayBuffer()), {
+      console.log("restoring repo", repo.cid)
+      await sinkAgent.com.atproto.repo.importRepo(new Uint8Array(
+        await loadCid(repo.cid, repo.encryptedWith)
+      ), {
         encoding: 'application/vnd.ipld.car',
       })
       setIsRestoringRepo(false)
@@ -209,13 +215,13 @@ export default function RestoreDialog ({ backupId }: { backupId: number }) {
   }
 
   async function restoreBlobs () {
-    console.log("RESTORING BLOPBS!")
     if (blobs && sinkAgent) {
       setIsRestoringBlobs(true)
       for (const blob of blobs) {
-        console.log("restoring", blob.cid)
-        const response = await fetch(`${GATEWAY_HOST}/ipfs/${blob.cid}`)
-        await sinkAgent.com.atproto.repo.uploadBlob(new Uint8Array(await response.arrayBuffer()), {
+        console.log("restoring blob", blob.cid)
+        await sinkAgent.com.atproto.repo.uploadBlob(new Uint8Array(
+          await loadCid(blob.cid, blob.encryptedWith)
+        ), {
           encoding: blob.contentType,
         })
       }
@@ -226,16 +232,31 @@ export default function RestoreDialog ({ backupId }: { backupId: number }) {
     }
   }
 
+  async function loadCid (cid: string, encryptedWith?: string): Promise<ArrayBuffer> {
+    const response = await fetch(cidUrl(cid))
+    if (encryptedWith) {
+      const key = keys.find(k => k.id === encryptedWith)
+      if (!key) {
+        throw new Error('could not find key')
+      } else {
+        return await decrypt(key, await response.arrayBuffer())
+      }
+    } else {
+      return await response.arrayBuffer()
+    }
+  }
+
   async function restorePrefsDoc () {
     if (prefsDoc && sinkAgent) {
       setIsRestoringPrefsDoc(true)
-      console.log("restoring", prefsDoc.cid)
-      const response = await fetch(`${GATEWAY_HOST}/ipfs/${prefsDoc.cid}`)
-      await sinkAgent.app.bsky.actor.putPreferences(await response.json())
+      const prefs = JSON.parse(new TextDecoder().decode(
+        await loadCid(prefsDoc.cid, prefsDoc.encryptedWith))
+      )
+      await sinkAgent.app.bsky.actor.putPreferences(prefs)
       setIsRestoringPrefsDoc(false)
       setIsPrefsDocRestored(true)
     } else {
-      console.warn('not restoring:', prefsDoc, sinkAgent)
+      throw new Error(`not restoring:${prefsDoc} to ${sinkAgent}`)
     }
   }
 
@@ -254,32 +275,35 @@ export default function RestoreDialog ({ backupId }: { backupId: number }) {
   }
 
   return (
-    <RestoreDialogView
-      sourceSession={sourceSession}
-      sinkSession={sinkSession}
-      loginToSink={loginToSink}
-      loginToSource={loginToSource}
-      createAccount={createAccount}
-      restoreRepo={restoreRepo}
-      restoreBlobs={restoreBlobs}
-      restorePrefsDoc={restorePrefsDoc}
-      transferIdentity={transferIdentity}
-      sendPlcRestoreAuthorizationEmail={sendPlcRestoreAuthorizationEmail}
-      isPlcRestoreAuthorizationEmailSent={plceRestoreAuthorizationEmailSent}
-      setupPlcRestore={setupPlcRestore}
-      isPlcRestoreSetup={!!plcOp}
-      repo={repo}
-      blobs={blobs}
-      prefsDoc={prefsDoc}
-      isRestoringRepo={isRestoringRepo}
-      isRestoringBlobs={isRestoringBlobs}
-      isRestoringPrefsDoc={isRestoringPrefsDoc}
-      isTransferringIdentity={isTransferringIdentity}
-      isRepoRestored={isRepoRestored}
-      areBlobsRestored={areBlobsRestored}
-      isPrefsDocRestored={isPrefsDocRestored}
-      isIdentityTransferred={isIdentityTransferred}
-    />
+    <>
+      <RestoreDialogView
+        keys={keys}
+        sourceSession={sourceSession}
+        sinkSession={sinkSession}
+        loginToSink={loginToSink}
+        loginToSource={loginToSource}
+        createAccount={createAccount}
+        restoreRepo={restoreRepo}
+        restoreBlobs={restoreBlobs}
+        restorePrefsDoc={restorePrefsDoc}
+        transferIdentity={transferIdentity}
+        sendPlcRestoreAuthorizationEmail={sendPlcRestoreAuthorizationEmail}
+        isPlcRestoreAuthorizationEmailSent={plceRestoreAuthorizationEmailSent}
+        setupPlcRestore={setupPlcRestore}
+        isPlcRestoreSetup={!!plcOp}
+        repo={repo}
+        blobs={blobs}
+        prefsDoc={prefsDoc}
+        isRestoringRepo={isRestoringRepo}
+        isRestoringBlobs={isRestoringBlobs}
+        isRestoringPrefsDoc={isRestoringPrefsDoc}
+        isTransferringIdentity={isTransferringIdentity}
+        isRepoRestored={isRepoRestored}
+        areBlobsRestored={areBlobsRestored}
+        isPrefsDocRestored={isPrefsDocRestored}
+        isIdentityTransferred={isIdentityTransferred}
+      />
+    </>
   )
 }
 
@@ -312,6 +336,14 @@ export function RestoreDialogView ({
   const [showTransferAuthorization, setShowTransferAuthorization] = useState(false)
   return (
     <div>
+      <Popover className="relative">
+        <PopoverButton className="outline-none cursor-pointer hover:bg-gray-100 p-2">
+          <KeyIcon className="w-6 h-6" />
+        </PopoverButton>
+        <PopoverPanel anchor="bottom" className="flex flex-col bg-white border rounded p-2">
+          <Keychain />
+        </PopoverPanel>
+      </Popover>
       <div className="flex flex-row justify-evenly">
         <div>
           {sourceSession ? (
@@ -593,7 +625,7 @@ function PlcTokenForm ({ setPlcToken }: { setPlcToken: (token: string) => void }
   const {
     register,
     handleSubmit,
-  } = useForm<PlcTokenForm>()
+  } = useForm<PlcTokenFormParams>()
 
   return (
     <form onSubmit={handleSubmit((data) => setPlcToken(data.token))}

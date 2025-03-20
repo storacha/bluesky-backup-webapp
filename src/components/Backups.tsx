@@ -1,7 +1,7 @@
 'use client'
 
 import { useBackupsContext } from "@/contexts/backups"
-import { GATEWAY_HOST } from "@/lib/constants"
+import { cidUrl } from "@/lib/storacha"
 import { shortenCID, shortenDID } from "@/lib/ui"
 import { useLiveQuery } from "dexie-react-hooks"
 import { Table, TableBody, TableCell, TableHeader, TableHeaderCell, TableRow } from "./Table"
@@ -62,23 +62,29 @@ export function Repo ({ backupId, className = '' }: { backupId: number, classNam
               <TableHeaderCell>Repo CID</TableHeaderCell>
               <TableHeaderCell>Bluesky Account DID</TableHeaderCell>
               <TableHeaderCell>Commit</TableHeaderCell>
+              <TableHeaderCell>Encrypted With</TableHeaderCell>
             </TableRow>
           </TableHeader>
           <TableBody>
             {repo && (
               <TableRow>
                 <TableCell>
-                  <a href={`${GATEWAY_HOST}/ipfs/${repo.uploadCid}`} className="font-mono text-sm">
-                    {shortenCID(repo.uploadCid)}
-                  </a>
-                </TableCell>
-                <TableCell>
-                  <a href={`${GATEWAY_HOST}/ipfs/${repo.cid}`} className="font-mono text-sm">
+                  <a href={cidUrl(repo.cid)} className="font-mono text-sm">
                     {shortenCID(repo.cid)}
                   </a>
                 </TableCell>
+                <TableCell>
+                  {repo.repoCid && (
+                    <a href={cidUrl(repo.repoCid)} className="font-mono text-sm">
+                      {shortenCID(repo.repoCid)}
+                    </a>
+                  )}
+                </TableCell>
                 <TableCell className="font-mono text-sm">{shortenDID(repo.accountDid)}</TableCell>
                 <TableCell>{repo.commit}</TableCell>
+                <TableCell>
+                  {repo.encryptedWith && shortenDID(repo.encryptedWith)}
+                </TableCell>
               </TableRow>
             )}
           </TableBody>
@@ -100,17 +106,21 @@ export function Prefs ({ backupId, className = '' }: { backupId: number, classNa
             <TableRow>
               <TableHeaderCell>CID</TableHeaderCell>
               <TableHeaderCell>Bluesky Account DID</TableHeaderCell>
+              <TableHeaderCell>Encrypted With</TableHeaderCell>
             </TableRow>
           </TableHeader>
           <TableBody>
             {prefsDoc && (
               <TableRow key={prefsDoc.cid}>
                 <TableCell>
-                  <a href={`${GATEWAY_HOST}/ipfs/${prefsDoc.cid}`} className="font-mono text-sm">
+                  <a href={cidUrl(prefsDoc.cid)} className="font-mono text-sm">
                     {shortenCID(prefsDoc.cid)}
                   </a>
                 </TableCell>
                 <TableCell className="font-mono text-sm">{shortenDID(prefsDoc.accountDid)}</TableCell>
+                <TableCell>
+                  {prefsDoc.encryptedWith && shortenDID(prefsDoc.encryptedWith)}
+                </TableCell>
               </TableRow>
             )}
           </TableBody>
@@ -132,17 +142,23 @@ export function Blobs ({ backupId, className = '' }: { backupId: number, classNa
             <TableRow>
               <TableHeaderCell>CID</TableHeaderCell>
               <TableHeaderCell>Bluesky Account DID</TableHeaderCell>
+              <TableHeaderCell>
+                Encrypted With
+              </TableHeaderCell>
             </TableRow>
           </TableHeader>
           <TableBody>
             {blobs?.map(blob => (
               <TableRow key={blob.cid}>
                 <TableCell>
-                  <a href={`${GATEWAY_HOST}/ipfs/${blob.cid}`} className="font-mono text-sm">
+                  <a href={cidUrl(blob.cid)} className="font-mono text-sm">
                     {shortenCID(blob.cid)}
                   </a>
                 </TableCell>
                 <TableCell className="font-mono text-sm">{shortenDID(blob.accountDid)}</TableCell>
+                <TableCell>
+                  {blob.encryptedWith && shortenDID(blob.encryptedWith)}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
