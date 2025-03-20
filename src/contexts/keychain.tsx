@@ -40,10 +40,10 @@ export async function hydrateSymkey (key: Key) {
 
 export const KeychainContext = createContext<KeychainContextProps>({
   keys: [],
-  keyPairs: {},
-  setSelectedKeyPair: () => { console.warn('setSelectedKeyPair is unimplemented') },
-  // @ts-expect-error this is supposed to return a KeyPair but we'll just warn if it's not implemented
-  generateKeyPair: () => { console.warn('generateKeyPair is unimplemented') }
+  setSelectedKey: () => { console.warn('setSelectedKeyPair is unimplemented') },
+  importKey: async () => { console.warn('importKey is unimplemented') },
+  forgetKey: async () => { console.warn('forgetKey is unimplemented') },
+  generateKeyPair: async () => { throw new Error('generateKeyPair is unimplemented') }
 });
 
 export const KeychainProvider = ({ children }: { children: ReactNode | ReactNode[] }) => {
