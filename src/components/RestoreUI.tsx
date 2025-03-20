@@ -10,7 +10,6 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { Secp256k1Keypair } from "@atproto/crypto"
 import { AdjustmentsHorizontalIcon, ArrowRightCircleIcon, CircleStackIcon, CloudIcon, IdentificationIcon } from "@heroicons/react/20/solid"
-import { Loader } from "./Loader"
 import { shorten, shortenDID } from "@/lib/ui"
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react'
 import Button from "./Button"

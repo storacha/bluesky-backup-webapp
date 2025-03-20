@@ -3,6 +3,7 @@ import { useState } from "react";
 import { ChevronDownIcon, CheckIcon } from "@heroicons/react/20/solid";
 import { shortenDID } from "@/lib/ui";
 import Dropdown from "./Dropdown";
+import Input from "./Input";
 import type { DropdownItem } from "./Dropdown";
 
 interface SpaceFinderProps {
@@ -19,20 +20,21 @@ export function SpaceFinder({
   className = "",
 }: SpaceFinderProps): JSX.Element {
   const [query, setQuery] = useState("");
-  
-  const filtered =
-    query === ""
-      ? spaces
-      : spaces.filter((space: Space) =>
-          (space.name || space.did())
-            .toLowerCase()
-            .replace(/\s+/g, "")
-            .includes(query.toLowerCase().replace(/\s+/g, ""))
-        );
 
-  const dropdownItems: DropdownItem[] = filtered.map(space => ({
+  const filtered = query === ""
+    ? spaces
+    : spaces.filter((space: Space) =>
+        (space.name || space.did())
+          .toLowerCase()
+          .replace(/\s+/g, "")
+          .includes(query.toLowerCase().replace(/\s+/g, ""))
+      );
+
+  const dropdownItems: DropdownItem[] = filtered.map((space) => ({
     label: space.name || shortenDID(space.did()),
-    icon: selected && space.did() === selected.did() ? <CheckIcon className="h-4 w-4 text-[var(--color-storacha-red)]" /> : undefined,
+    icon: selected && space.did() === selected.did() ? (
+      <CheckIcon className="h-4 w-4 text-[var(--color-storacha-red)]" />
+    ) : undefined,
     onClick: () => {
       if (setSelected) {
         setSelected(space);
@@ -51,13 +53,19 @@ export function SpaceFinder({
 
   return (
     <div className={className}>
-      <Dropdown 
+      <Dropdown
         items={dropdownItems}
         variant="secondary"
         align="right"
         className="w-full"
         trigger={triggerContent}
-      />
+      >
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search for a space"
+        />
+      </Dropdown>
     </div>
   );
 }

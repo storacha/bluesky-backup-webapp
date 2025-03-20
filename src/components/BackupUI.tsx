@@ -9,7 +9,6 @@ import { useLiveQuery } from "dexie-react-hooks"
 import { AdjustmentsHorizontalIcon, ArrowRightCircleIcon, CircleStackIcon, CloudIcon, PlusCircleIcon } from "@heroicons/react/20/solid"
 import { useBackupsContext } from "@/contexts/backups"
 import { Blob, PrefsDoc, Repo } from "@/lib/db"
-import { Loader } from "./Loader"
 import { CreateSpaceModal } from "./CreateSpace"
 import Button from "./Button"
 
