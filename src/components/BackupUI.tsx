@@ -391,7 +391,8 @@ export function BackupUIView ({
                 <p>Please choose the Storacha space where you&apos;d like to back up your Bluesky account:</p>
                 <SpaceFinder
                   selected={space} setSelected={setSelectedSpace} spaces={storacha.spaces}
-                  className="w-52" />
+                  className="w-52"
+                />
               </div>
             ) : (
               <div className="w-full flex flex-col gap-4 justify-center items-center">
@@ -404,7 +405,8 @@ export function BackupUIView ({
                 >
                   Create new Space
                 </button>
-              </div>)
+              </div>
+            )
           )}
           {isBackingUp && (
             <div className="mt-2 mx-8 text-left text-xs text-red-800 uppercase">
@@ -414,8 +416,7 @@ export function BackupUIView ({
         </div>
       ) : (
         <div>Please authenticate to both Bluesky and Storacha to continue.</div>
-      )
-      }
+      )}
     </>
   )
 }
