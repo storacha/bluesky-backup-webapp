@@ -10,7 +10,7 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { Secp256k1Keypair } from "@atproto/crypto"
 import { AdjustmentsHorizontalIcon, ArrowRightCircleIcon, CircleStackIcon, CloudIcon, IdentificationIcon, KeyIcon } from "@heroicons/react/20/solid"
-import { shorten, shortenDID } from "@/lib/ui"
+import { shortenDID } from "@/lib/ui"
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react'
 import Button from "./Button"
 import Input from "./Input"
@@ -350,23 +350,25 @@ export function RestoreDialogView ({
             sinkSession ? (
               <div className="flex flex-col">
                 <div>
-                  <div className="flex flex-row items-center w-full">
-                    <div className="w-28"></div>
+                  <div className="flex flex-row items-center w-full mb-4">
+                    <div className="w-32"></div>
                     <div className="w-24">
                       <h4 className="text-center uppercase text-xs font-bold">
                         Storacha
                       </h4>
                     </div>
-                    <div className="w-6 h-6">
+                    <div className="w-8 h-6">
                     </div>
-                    <div className="w-24">
+                    <div className="w-44">
                       <h4 className="text-center uppercase text-xs font-bold">
-                        {sinkSession?.pdsUrl?.hostname}
+                        {sinkSession?.serviceUrl.hostname}
                       </h4>
-                      <div className="text-xs w-full truncate">{sinkSession.did && shortenDID(sinkSession.did)}</div>
+                      <div className="text-center text-xs w-full truncate">
+                        {sinkSession.did && shortenDID(sinkSession.did)}
+                      </div>
                     </div>
                   </div>
-                  <div className="flex flex-row items-center my-2 space-x-8">
+                  <div className="flex flex-row items-center my-2 space-x-12">
                     <h5 className="font-bold uppercase text-sm text-right w-28">Repository</h5>
                     <Popover className="relative">
                       <PopoverButton className="outline-none">
@@ -384,19 +386,19 @@ export function RestoreDialogView ({
                       </PopoverPanel>
                     </Popover>
                     {isRestoringRepo ? (
-                      <Button 
+                      <Button
                         isLoading
                         hideLoadingText
                         variant="outline"
-                        className="rounded-full p-1.5"
+                        className="rounded-full w-8 h-8"
                         aria-label="Restoring repository"
                       />
                     ) : (
                       <Button
-                        onClick={restoreRepo} 
+                        onClick={restoreRepo}
                         disabled={isRestoringRepo}
                         variant="outline"
-                        className="rounded-full p-1.5"
+                        className="rounded-full w-8 h-8"
                         leftIcon={<ArrowRightCircleIcon className="w-6 h-6" />}
                       />
                     )}
@@ -405,7 +407,7 @@ export function RestoreDialogView ({
                     </div>
                   </div>
 
-                  <div className="flex flex-row items-center my-2 space-x-8">
+                  <div className="flex flex-row items-center my-2 space-x-12">
                     <h5 className="font-bold uppercase text-sm text-right w-28">Blobs</h5>
                     <div className="rounded-full hover:bg-white border w-8 h-8 flex flex-col justify-center items-center">
                       <span className="font-bold text-sm ">
@@ -413,19 +415,19 @@ export function RestoreDialogView ({
                       </span>
                     </div>
                     {isRestoringBlobs ? (
-                      <Button 
+                      <Button
                         isLoading
                         hideLoadingText
                         variant="outline"
-                        className="rounded-full p-1.5"
+                        className="rounded-full w-8 h-8"
                         aria-label="Restoring blobs"
                       />
                     ) : (
                       <Button
-                        onClick={restoreBlobs} 
+                        onClick={restoreBlobs}
                         disabled={isRestoringBlobs}
                         variant="outline"
-                        className="rounded-full p-1.5"
+                        className="rounded-full w-8 h-8"
                         leftIcon={<ArrowRightCircleIcon className="w-6 h-6" />}
                       />
                     )}
@@ -434,7 +436,7 @@ export function RestoreDialogView ({
                     </div>
                   </div>
 
-                  <div className="flex flex-row items-center my-2 space-x-8">
+                  <div className="flex flex-row items-center my-2 space-x-12">
                     <h5 className="font-bold uppercase text-sm text-right w-28">Preferences</h5>
                     <Popover className="relative">
                       <PopoverButton className="outline-none">
@@ -452,19 +454,19 @@ export function RestoreDialogView ({
                       </PopoverPanel>
                     </Popover>
                     {isRestoringPrefsDoc ? (
-                      <Button 
+                      <Button
                         isLoading
                         hideLoadingText
                         variant="outline"
-                        className="rounded-full p-1.5"
+                        className="rounded-full w-8 h-8"
                         aria-label="Restoring preferences"
                       />
                     ) : (
                       <Button
-                        onClick={restorePrefsDoc} 
+                        onClick={restorePrefsDoc}
                         disabled={isRestoringPrefsDoc}
                         variant="outline"
-                        className="rounded-full p-1.5"
+                        className="rounded-full w-8 h-8"
                         leftIcon={<ArrowRightCircleIcon className="w-6 h-6" />}
                       />
                     )}
@@ -474,32 +476,32 @@ export function RestoreDialogView ({
                   </div>
                   <div className="flex flex-row items-center w-full mt-8">
                     <div className="w-28"></div>
-                    <div className="w-24">
+                    <div className="w-32">
                       <h4 className="text-center uppercase text-xs font-bold">
-                        {sourceSession?.pdsUrl?.hostname && shorten(sourceSession?.pdsUrl?.hostname, 10)}
+                        {sourceSession.serviceUrl.hostname}
                       </h4>
                       <div className="text-xs w-full truncate">{sourceSession.did && shortenDID(sourceSession.did)}</div>
                     </div>
-                    <div className="w-6 h-6">
+                    <div className="w-8 h-6">
                     </div>
-                    <div className="w-24">
+                    <div className="w-32">
                       <h4 className="text-center uppercase text-xs font-bold">
-                        {sinkSession?.pdsUrl?.hostname && shorten(sinkSession?.pdsUrl?.hostname, 10)}
+                        {sinkSession.serviceUrl.hostname}
                       </h4>
-                      <div className="text-xs w-full truncate">{sinkSession.did && shortenDID(sinkSession.did)}</div>
+                      <div className="text-center text-xs w-full truncate">{sinkSession.did && shortenDID(sinkSession.did)}</div>
                     </div>
                   </div>
-                  <div className="flex flex-row items-center my-2 space-x-8">
+                  <div className="flex flex-row items-center my-2 space-x-12">
                     <h5 className="font-bold uppercase text-sm text-right w-28">Identity</h5>
                     <div className="rounded-full hover:bg-white border w-8 h-8 flex flex-col justify-center items-center">
                       <IdentificationIcon className="w-4 h-4" />
                     </div>
                     {isTransferringIdentity ? (
-                      <Button 
+                      <Button
                         isLoading
                         hideLoadingText
                         variant="outline"
-                        className="rounded-full p-1.5"
+                        className="rounded-full w-8 h-8 "
                         aria-label="Transferring identity"
                       />
                     ) : (
@@ -507,10 +509,10 @@ export function RestoreDialogView ({
                         isPlcRestoreSetup ? (
                           <div className="flex flex-col items-center">
                             <Button
-                              onClick={transferIdentity} 
+                              onClick={transferIdentity}
                               disabled={isTransferringIdentity}
                               variant="outline"
-                              className="rounded-full p-1.5 m-auto"
+                              className="rounded-full w-8 h-8 m-auto"
                               leftIcon={<ArrowRightCircleIcon className="w-6 h-6" />}
                             />
                             <Popover className="relative h-0 w-0">
@@ -529,7 +531,7 @@ export function RestoreDialogView ({
                         showTransferAuthorization ? (
                           <div className="flex flex-col w-24 items-center">
                             <Button
-                              onClick={sendPlcRestoreAuthorizationEmail} 
+                              onClick={sendPlcRestoreAuthorizationEmail}
                               disabled={isTransferringIdentity}
                               variant="primary"
                               className="text-xs font-bold uppercase py-1 px-2"
@@ -547,10 +549,10 @@ export function RestoreDialogView ({
                           </div>
                         ) : (
                           <Button
-                            onClick={() => { setShowTransferAuthorization(true) }} 
+                            onClick={() => { setShowTransferAuthorization(true) }}
                             disabled={isTransferringIdentity}
                             variant="outline"
-                            className="rounded-full p-1.5"
+                            className="rounded-full w-8 h-8"
                             leftIcon={<ArrowRightCircleIcon className="w-6 h-6" />}
                           />
                         )
@@ -567,7 +569,7 @@ export function RestoreDialogView ({
                 </div>
               </div>
             ) : (
-              <div className="my-4">
+              <div className="my-4 flex flex-col items-center min-w-96 space-y-4">
                 <h3 className="font-bold">Authenticate to new Bluesky server</h3>
                 <AtprotoLoginForm login={loginToSink} defaultServer={ATPROTO_DEFAULT_SINK} />
                 <h4 className="font-bold">OR</h4>
@@ -591,11 +593,15 @@ function AtprotoLoginForm ({ login, defaultServer }: AtprotoLoginFormProps) {
   const {
     register,
     handleSubmit,
+    reset
   } = useForm<LoginForm>()
-
+  const onSubmit = handleSubmit(async (data) => {
+    await login(data.handle, data.password, { server: data.server || `https://${defaultServer}` })
+    reset()
+  })
   return (
-    <form onSubmit={handleSubmit((data) => login(data.handle, data.password, { server: data.server || `https://${defaultServer}` }))}
-      className="flex flex-col space-y-2">
+    <form onSubmit={onSubmit}
+      className="flex flex-col space-y-2 w-full">
       <Input
         label="Server"
         placeholder={`https://${defaultServer}`}
@@ -604,11 +610,13 @@ function AtprotoLoginForm ({ login, defaultServer }: AtprotoLoginFormProps) {
       <Input
         label="Handle"
         placeholder={`racha.${defaultServer}`}
+        autoComplete="off"
         {...register('handle')}
       />
       <Input
         label="Password"
         type="password"
+        autoComplete="off"
         {...register('password')}
       />
       <Button
@@ -656,7 +664,7 @@ function AtprotoCreateAccountForm ({ createAccount, defaultServer }: AtprotoCrea
       server: data.server || `https://${defaultServer}`,
       inviteCode: data.inviteCode
     }))}
-      className="flex flex-col space-y-2">
+      className="flex flex-col space-y-2 w-full">
       <Input
         label="Server"
         placeholder={`https://${defaultServer}`}

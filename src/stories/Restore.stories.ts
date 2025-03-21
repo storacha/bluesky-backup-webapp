@@ -8,12 +8,12 @@ import { CredentialSession } from '@atproto/api';
 
 const sourceSession = {
   did: 'did:key:sourceabc123xyz',
-  pdsUrl: new URL('https://bsky.social')
+  serviceUrl: new URL('https://bsky.social')
 } as CredentialSession
 
 const sinkSession = {
   did: 'did:key:sinkabc123xyz',
-  pdsUrl: new URL('https://atproto.example.com')
+  serviceUrl: new URL('https://atproto.example.com')
 } as CredentialSession
 
 const meta = {
