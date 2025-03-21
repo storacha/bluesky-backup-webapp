@@ -71,7 +71,7 @@ export const Interactive = () => {
             onClick={handleConfirm} 
             isLoading={isLoading}
           >
-            I'm Sure
+            I&apos;m Sure
           </DialogConfirmButton>
         </DialogActions>
       </Dialog>
@@ -112,7 +112,7 @@ return (
           onClick={handleConfirm} 
           isLoading={isLoading}
         >
-          I'm Sure
+          I&apos;m Sure
         </DialogConfirmButton>
       </DialogActions>
     </Dialog>
@@ -144,7 +144,7 @@ export const WithoutCloseButton: Story = {
     onClose: () => {},
     title: 'No Close Button',
     showCloseButton: false,
-    children: <p className="py-4">This dialog doesn't have a close button in the corner.</p>,
+    children: <p className="py-4">This dialog doesn&apos;t have a close button in the corner.</p>,
     footer: (
       <Button variant="primary" className="w-full">Continue</Button>
     )

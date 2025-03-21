@@ -213,7 +213,7 @@ export function KeychainView ({
         </div>
       ) : newKey ? (
         <div className="border border-red-200 rounded-lg p-4 mb-4 bg-red-50">
-          <h3 className="font-bold mb-2">We've created your new key!</h3>
+          <h3 className="font-bold mb-2">We&apos;ve created your new key!</h3>
           <KeyDetails 
             dbKey={newKey} 
             onDone={() => { setNewKey(undefined) }} 

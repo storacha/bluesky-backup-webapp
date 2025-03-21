@@ -13,6 +13,7 @@ export interface BaseInputProps {
   label?: string;
   helperText?: string;
   as?: AsType;
+  rows?: number;
 }
 
 export type InputProps<T extends AsType = "input"> = BaseInputProps & 
@@ -32,11 +33,11 @@ const Input = forwardRef(<T extends AsType = "input">(
     disabled,
     id,
     as = "input" as T,
+    rows = 3,
     ...props
   }: InputProps<T>,
   ref: React.Ref<ElementType<T>>
 ) => {
-  const rows = (props as any).rows ?? 3;
   const baseStyles = 'w-full px-4 py-2 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none';
   
   const variants = {
