@@ -44,16 +44,16 @@ type Story = StoryObj<typeof meta>;
 
 export const Initial: Story = {};
 
-export const SourceAuthenticated: Story = {
+export const SinkAuthenticated: Story = {
   args: {
-    sourceSession,
+    sinkSession,
   }
 };
 
-export const SinkAuthenticated: Story = {
+export const SourceAuthenticated: Story = {
   args: {
-    sourceSession,
     sinkSession,
+    sourceSession
   }
 };
 

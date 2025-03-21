@@ -282,7 +282,21 @@ export function BackupUIView ({
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-col items-start">
+                <div className="prose-sm text-center mb-4">
+                  <p>
+                    Use the <b>keychain</b> 🗝️ above to create a private key if you&apos;d like to encrypt your data. Be sure to export 📝 your key and <b>save</b> it in a password manager or another <b>secure</b> location!
+                  </p>
+                  <p>
+                    If you <b>don&apos;t</b> want to encrypt 🤪, or if you&apos;ve already created a key ✅, you can back up your <b>ATProto Repository</b> 🔗, &ldquo;blobs&rdquo; of data like images 🏞️ and videos, and preferences 🛠️ <b>separately</b> below ⤵️.
+                  </p>
+                  <p>
+                    If you choose not to <b>encrypt</b> 😰, please know that your data will be uploaded to a <b>public network</b> replicated around the world 🌍🌏🌎 - while it can be deleted from <b>Storacha&apos;s</b> 🐔 servers, once it&apos;s <b>flown the coop</b> 🐣 it will be hard to ensure it&apos;s really gone!
+                  </p>
+                  <p>
+                    Encrypting at least your preferences is highly recommended 🤓 - they are <b>private</b> on your PDS 👁️!
+                  </p>
+                </div>
+                <div className="flex flex-col">
                   <div className="flex flex-row items-center w-full space-x-0 my-4">
                     <div className="w-36"></div>
                     <div className="w-24">
@@ -408,12 +422,14 @@ export function BackupUIView ({
               </div>
             ) : (
               <div className="flex flex-col justify-center items-center space-y-4">
-                <p className="text-center">
-                  {`Great, you're logged in to Bluesky 🦋 and Storacha 🐔!`}
-                </p>
-                <p className="text-center">
-                  {`Click "Initialize Backup" 👇 to get started 👷 with your first backup 👈!`}
-                </p>
+                <div className="prose-sm text-center mb-8">
+                  <p>
+                    {`Great, you're logged in to Bluesky 🦋 and Storacha 🐔!`}
+                  </p>
+                  <p>
+                    {`Click "Initialize Backup" 👇 to get started 👷 with your first backup 👈!`}
+                  </p>
+                </div>
                 <Button
                   onClick={onClickInitializeBackup}
                   disabled={!space}

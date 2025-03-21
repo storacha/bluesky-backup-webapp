@@ -66,18 +66,20 @@ export const Dashboard = () => {
                   <Image src="/wordmark.png" alt="Storacha" height="60" width="168" className="-mt-5" />
                 </div>
               </div>
-              <p className="text-center max-w-lg">
-                Back up your Bluesky data 💾 !
-              </p>
-              <p className="text-center max-w-lg">
-                {`We'll help you encrypt it 🔐 to keep it safe, and archive 🏢 it to the Filecoin network for extreme durability 🦾.`}
-              </p>
-              <p className="text-center max-w-lg">
-                If you&apos;d like to migrate 🦆 to a new Bluesky Personal Data Server we&apos;ll help you decrypt your backup 🔓, load it into the new server 🚚 and then transfer your
-                identity by providing cryptographic proof 🕵️ to your old server that you&apos;ve moved!
-              </p>
+              <div className="prose-sm text-center">
+                <p className="font-bold text-base">
+                  Back up your Bluesky data 💾 !
+                </p>
+                <p>
+                  We&apos;ll help you <b>encrypt</b> it 🔐 to keep it safe, and archive 🏢 it to the <b>Filecoin Network</b> for extreme durability 🦾.
+                </p>
+                <p>
+                  If you&apos;d like to migrate 🦆 to a new <b>Bluesky Personal Data Server</b> we&apos;ll help you decrypt your backup 🔓, load it into the new server 🚚 and then transfer your
+                  identity by providing <b>cryptographic</b> proof 🕵️ to your old server that <b>you&apos;ve moved!</b>
+                </p>
+                <p className="font-bold text-base">To get started, please log in to your Bluesky account:</p>
+              </div>
               <div className="flex flex-col items-center">
-                <h4 className="mb-4 font-bold">To get started, please log in to your Bluesky account:</h4>
                 <BlueskyAuthenticator />
               </div>
             </div>
