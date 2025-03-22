@@ -79,7 +79,7 @@ export const Dashboard = () => {
                 </p>
                 <p className="font-bold text-base">To get started, please log in to your Bluesky account:</p>
               </div>
-              <div className="flex flex-col items-center">
+              <div className="flex flex-col items-center w-full">
                 <BlueskyAuthenticator />
               </div>
             </div>

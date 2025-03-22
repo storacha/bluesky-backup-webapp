@@ -487,97 +487,109 @@ export function RestoreDialogView ({
                   </div>
                 </div>
                 {sourceSession ? (
-                  <div className="flex flex-col items-start">
-                    <div className="flex flex-row items-center w-full mt-8 mb-4">
-                      <div className="w-28"></div>
-                      <div className="w-32">
-                        <h4 className="text-center uppercase text-xs font-bold">
-                          {sourceSession.serviceUrl.hostname}
-                        </h4>
-                        <div className="text-xs w-full truncate">{sourceSession.did && shortenDID(sourceSession.did)}</div>
-                      </div>
-                      <div className="w-8 h-6">
-                      </div>
-                      <div className="w-32">
-                        <h4 className="text-center uppercase text-xs font-bold">
-                          {sinkSession.serviceUrl.hostname}
-                        </h4>
-                        <div className="text-center text-xs w-full truncate">{sinkSession.did && shortenDID(sinkSession.did)}</div>
-                      </div>
+                  <div className="flex flex-col items-center">
+                    <div className="prose-sm text-center mt-16">
+                      <p>
+                        You&apos;re locked in 🔐. All that&apos;s left is to send a confirmation ✅ code to your email.
+                      </p>
+                      <p>
+                        Be careful ⛔️ ! If you&apos;re transferring your identity away from the Bluesky 🦋 PDS you can&apos;t currently go back! You may
+                        lose access to your DMs 💅 there if you do this.
+                      </p>
                     </div>
-                    <div className="flex flex-row items-center my-2 space-x-12">
-                      <h5 className="font-bold uppercase text-sm text-right w-28">Identity</h5>
-                      <div className="rounded-full hover:bg-white border w-8 h-8 flex flex-col justify-center items-center">
-                        <IdentificationIcon className="w-4 h-4" />
+                    <div className="flex flex-col items-start">
+                      <div className="flex flex-row items-center w-full mt-8 mb-4">
+                        <div className="w-28"></div>
+                        <div className="w-32">
+                          <h4 className="text-center uppercase text-xs font-bold">
+                            {sourceSession.serviceUrl.hostname}
+                          </h4>
+                          <div className="text-xs w-full truncate">{sourceSession.did && shortenDID(sourceSession.did)}</div>
+                        </div>
+                        <div className="w-8 h-6">
+                        </div>
+                        <div className="w-32">
+                          <h4 className="text-center uppercase text-xs font-bold">
+                            {sinkSession.serviceUrl.hostname}
+                          </h4>
+                          <div className="text-center text-xs w-full truncate">{sinkSession.did && shortenDID(sinkSession.did)}</div>
+                        </div>
                       </div>
-                      {isTransferringIdentity ? (
-                        <Button
-                          isLoading
-                          hideLoadingText
-                          variant="outline"
-                          className="rounded-full w-8 h-8 "
-                          aria-label="Transferring identity"
-                        />
-                      ) : (
-                        isPlcRestoreAuthorizationEmailSent ? (
-                          isPlcRestoreSetup ? (
-                            <div className="flex flex-col items-center">
+                      <div className="flex flex-row items-center my-2 space-x-12">
+                        <h5 className="font-bold uppercase text-sm text-right w-28">Identity</h5>
+                        <div className="rounded-full hover:bg-white border w-8 h-8 flex flex-col justify-center items-center">
+                          <IdentificationIcon className="w-4 h-4" />
+                        </div>
+                        {isTransferringIdentity ? (
+                          <Button
+                            isLoading
+                            hideLoadingText
+                            variant="outline"
+                            className="rounded-full w-8 h-8 "
+                            aria-label="Transferring identity"
+                          />
+                        ) : (
+                          isPlcRestoreAuthorizationEmailSent ? (
+                            isPlcRestoreSetup ? (
+                              <div className="flex flex-col items-center">
+                                <Button
+                                  onClick={transferIdentity}
+                                  disabled={isTransferringIdentity}
+                                  variant="outline"
+                                  className="rounded-full w-8 h-8 m-auto"
+                                  leftIcon={<ArrowRightCircleIcon className="w-6 h-6" />}
+                                />
+                                <Popover className="relative h-0 w-0">
+                                  <PopoverButton className="w-0 h-0"></PopoverButton>
+                                  <PopoverPanel static anchor="bottom" className="flex flex-col bg-white border rounded p-2">
+                                    <h5 className="w-56 m-auto text-center text-xs font-bold uppercase">
+                                      Identity Transfer is not currently reversible, please use caution!
+                                    </h5>
+                                  </PopoverPanel>
+                                </Popover>
+                              </div>
+                            ) : (
+                              <PlcTokenForm setPlcToken={setupPlcRestore} />
+                            )
+                          ) : (
+                            showTransferAuthorization ? (
+                              <div className="flex flex-col w-24 items-center">
+                                <Button
+                                  onClick={sendPlcRestoreAuthorizationEmail}
+                                  disabled={isTransferringIdentity}
+                                  variant="primary"
+                                  className="text-xs font-bold uppercase py-1 px-2"
+                                >
+                                  Send Email
+                                </Button>
+                                <Popover className="relative h-0 w-0">
+                                  <PopoverButton className="w-0 h-0"></PopoverButton>
+                                  <PopoverPanel static anchor="bottom" className="flex flex-col bg-white border rounded p-2">
+                                    <h5 className="w-56 m-auto text-center text-xs font-bold uppercase mt-2">
+                                      To transfer your identity you must provide a confirmation code sent to the email registered with your current PDS host.
+                                    </h5>
+                                  </PopoverPanel>
+                                </Popover>
+                              </div>
+                            ) : (
                               <Button
-                                onClick={transferIdentity}
+                                onClick={() => { setShowTransferAuthorization(true) }}
                                 disabled={isTransferringIdentity}
                                 variant="outline"
-                                className="rounded-full w-8 h-8 m-auto"
+                                className="rounded-full w-8 h-8"
                                 leftIcon={<ArrowRightCircleIcon className="w-6 h-6" />}
                               />
-                              <Popover className="relative h-0 w-0">
-                                <PopoverButton className="w-0 h-0"></PopoverButton>
-                                <PopoverPanel static anchor="bottom" className="flex flex-col bg-white border rounded p-2">
-                                  <h5 className="w-56 m-auto text-center text-xs font-bold uppercase">
-                                    Identity Transfer is not currently reversible, please use caution!
-                                  </h5>
-                                </PopoverPanel>
-                              </Popover>
-                            </div>
-                          ) : (
-                            <PlcTokenForm setPlcToken={setupPlcRestore} />
+                            )
                           )
-                        ) : (
-                          showTransferAuthorization ? (
-                            <div className="flex flex-col w-24 items-center">
-                              <Button
-                                onClick={sendPlcRestoreAuthorizationEmail}
-                                disabled={isTransferringIdentity}
-                                variant="primary"
-                                className="text-xs font-bold uppercase py-1 px-2"
-                              >
-                                Send Email
-                              </Button>
-                              <Popover className="relative h-0 w-0">
-                                <PopoverButton className="w-0 h-0"></PopoverButton>
-                                <PopoverPanel static anchor="bottom" className="flex flex-col bg-white border rounded p-2">
-                                  <h5 className="w-56 m-auto text-center text-xs font-bold uppercase mt-2">
-                                    To transfer your identity you must provide a confirmation code sent to the email registered with your current PDS host.
-                                  </h5>
-                                </PopoverPanel>
-                              </Popover>
-                            </div>
-                          ) : (
-                            <Button
-                              onClick={() => { setShowTransferAuthorization(true) }}
-                              disabled={isTransferringIdentity}
-                              variant="outline"
-                              className="rounded-full w-8 h-8"
-                              leftIcon={<ArrowRightCircleIcon className="w-6 h-6" />}
-                            />
-                          )
-                        )
-                      )}
+                        )}
 
-                      <div className={`${isIdentityTransferred ? 'border-emerald-500 text-emerald-500' : 'border-gray-500 text-gray-500'} rounded-full hover:bg-white border w-8 h-8 flex flex-col justify-center items-center`}>
-                        <IdentificationIcon className="w-4 h-4" />
+                        <div className={`${isIdentityTransferred ? 'border-emerald-500 text-emerald-500' : 'border-gray-500 text-gray-500'} rounded-full hover:bg-white border w-8 h-8 flex flex-col justify-center items-center`}>
+                          <IdentificationIcon className="w-4 h-4" />
+                        </div>
                       </div>
                     </div>
                   </div>
+
                 ) : (
                   <div className="my-8 flex flex-col items-center min-w-96 space-y-4">
                     <div className="prose-sm text-center mb-4">
@@ -588,7 +600,7 @@ export function RestoreDialogView ({
                     </div>
                     <h3 className="font-bold mb-2">Authenticate to your existing Personal Data Server:</h3>
                     <div className="w-96">
-                      <AtprotoLoginForm login={loginToSource} defaultServer={ATPROTO_DEFAULT_SINK} />
+                      <AtprotoLoginForm login={loginToSource} defaultServer={ATPROTO_DEFAULT_SOURCE} />
                     </div>
                   </div>
                 )}
