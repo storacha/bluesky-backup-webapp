@@ -78,10 +78,10 @@ export const Dashboard = () => {
                   identity by providing <b>cryptographic</b> proof 🕵️ to your old server that <b>you&apos;ve moved!</b>
                 </p>
                 <p>
-                  ‼️ Please note ‼️ This service should be considered "early alpha" and definitely has some rough edges.
+                  ‼️ Please note ‼️ This service should be considered &ldquo;early alpha&rdquo; and definitely has some rough edges.
                 </p>
                 <p>
-                  If you'd like to contribute 💪 to its development we'd love to see 👀 you at
+                  If you&apos;d like to contribute 💪 to its development we&apos;d love to see 👀 you at
                   {' '}<a className="underline text-bluesky-blue font-bold" href="https://github.com/storacha/bluesky-backup-webapp/">
                     github.com/storacha/bluesky-backup-webapp/
                   </a>
