@@ -362,7 +362,7 @@ export function BackupUIView({
                       </PopoverButton>
                       <PopoverPanel
                         anchor="bottom"
-                        className="flex flex-col bg-white border rounded p-2"
+                        className="flex flex-col bg-white rounded-lg p-2 ring-1 ring-gray-300"
                       >
                         <Keychain />
                       </PopoverPanel>

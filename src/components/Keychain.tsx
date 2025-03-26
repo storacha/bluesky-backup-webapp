@@ -124,7 +124,7 @@ function KeyDetails({ dbKey, onDone, importKey }: KeyDetailsProps) {
           <h3 className="text-xs font-semibold text-gray-600 mb-1">
             SECRET KEY
           </h3>
-          <div className="whitespace-pre w-full max-h-40 font-mono text-xs overflow-auto bg-gray-100 p-2 rounded-lg border">
+          <div className="whitespace-pre w-xl max-h-40 font-mono text-xs overflow-auto bg-gray-100 p-2 rounded-lg ring-1 ring-gray-300">
             {secret}
           </div>
           <div className="flex flex-row justify-between mt-3">
@@ -298,7 +298,7 @@ export function KeychainView({
         isOpen={isKeyDetailsDialogOpen}
         onClose={() => setIsKeyDetailsDialogOpen(false)}
         title="Key Details"
-        size="md"
+        size="lg"
       >
         {selectedKeyDetails && (
           <KeyDetails
