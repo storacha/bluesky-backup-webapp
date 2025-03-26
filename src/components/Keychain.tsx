@@ -19,6 +19,7 @@ import Button from './Button'
 import Input from './Input'
 import Dialog from './Dialog'
 import { Loader } from './Loader'
+import { useStore } from '@/lib/store'
 
 interface KeyImportFormParams {
   keyMaterial: string
@@ -62,13 +63,19 @@ interface KeyDetailsProps {
 }
 
 function KeyDetails({ dbKey, onDone, importKey }: KeyDetailsProps) {
+  const { rsaKey, setSecretKey, secretKey: persistedSecret } = useStore()
   const [secret, setSecret] = useState<string>()
   const [showImport, setShowImport] = useState<boolean>(false)
-  const keyPair = dbKey?.keyPair
+  const keyPair = rsaKey?.keyPair || dbKey?.keyPair
 
   async function showSecret() {
     if (keyPair?.toSecret) {
       setSecret(await keyPair?.toSecret())
+      setSecretKey(await keyPair.toSecret())
+    }
+    // we should fallback to persisted secret if the keyPair is not available
+    else if (persistedSecret) {
+      setSecret(persistedSecret)
     } else {
       console.warn("can't show secret", keyPair)
     }
@@ -125,7 +132,7 @@ function KeyDetails({ dbKey, onDone, importKey }: KeyDetailsProps) {
             SECRET KEY
           </h3>
           <div className="whitespace-pre w-full max-h-40 font-mono text-xs overflow-auto bg-gray-100 p-2 rounded-lg border">
-            {secret}
+            {secret || persistedSecret}
           </div>
           <div className="flex flex-row justify-between mt-3">
             <Button
@@ -135,12 +142,12 @@ function KeyDetails({ dbKey, onDone, importKey }: KeyDetailsProps) {
             >
               Hide
             </Button>
-            <CopyButton text={secret} />
+            <CopyButton text={secret || persistedSecret} />
           </div>
         </div>
       ) : (
         <div className="flex flex-wrap gap-2 mt-3">
-          {!keyPair?.publicKey && (
+          {(!keyPair?.publicKey || !persistedSecret) && (
             <Button
               variant="secondary"
               onClick={() => {
@@ -150,7 +157,7 @@ function KeyDetails({ dbKey, onDone, importKey }: KeyDetailsProps) {
               Import Key
             </Button>
           )}
-          {keyPair?.privateKey && (
+          {(keyPair?.privateKey || persistedSecret) && (
             <Button
               variant="secondary"
               onClick={showSecret}
@@ -187,11 +194,13 @@ export function KeychainView({
   const [newKey, setNewKey] = useState<Key>()
   const [isKeyDetailsDialogOpen, setIsKeyDetailsDialogOpen] = useState(false)
   const [selectedKeyDetails, setSelectedKeyDetails] = useState<Key | null>(null)
+  const { setRsaKey } = useStore()
 
   async function onClickAdd() {
     if (generateKeyPair) {
       setGeneratingKeyPair(true)
       setNewKey(await generateKeyPair())
+      setRsaKey((await generateKeyPair()) as Key)
       setGeneratingKeyPair(false)
     } else {
       console.warn(
@@ -202,6 +211,7 @@ export function KeychainView({
 
   const openKeyDetails = (key: Key) => {
     setSelectedKeyDetails(key)
+    setRsaKey(key)
     setIsKeyDetailsDialogOpen(true)
   }
 
