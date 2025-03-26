@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.4](https://github.com/storacha/bluesky-backup-webapp/compare/blusky-backup-app-v1.2.3...blusky-backup-app-v1.2.4) (2025-03-26)
+
+
+### Other Changes
+
+* **ui:** ui (popovers, dialogs, keychain) enhancements ([#48](https://github.com/storacha/bluesky-backup-webapp/issues/48)) ([f30ddd5](https://github.com/storacha/bluesky-backup-webapp/commit/f30ddd5da12c81828d41bfbb7687c535d447af84))
+
 ## [1.2.3](https://github.com/storacha/bluesky-backup-webapp/compare/blusky-backup-app-v1.2.2...blusky-backup-app-v1.2.3) (2025-03-23)
 
 ### Bug Fixes
