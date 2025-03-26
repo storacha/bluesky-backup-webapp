@@ -308,7 +308,7 @@ export function KeychainView({
         isOpen={isKeyDetailsDialogOpen}
         onClose={() => setIsKeyDetailsDialogOpen(false)}
         title="Key Details"
-        size="md"
+        size="lg"
       >
         {selectedKeyDetails && (
           <KeyDetails

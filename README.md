@@ -8,7 +8,11 @@ HOT HOT HOT backups for your ATProto PDS
 
 1. Run `pnpm dev`.
 2. In another terminal, run `script/start-tunnel`.
-   - (optional) You may want to set up a [static domain in ngrok](https://dashboard.ngrok.com/domains). Once you've set up a static domain, you can use it by instead running `script/start-tunnel --url spicy-rooster-fondly.ngrok-free.app` (replacing the URL with your own).
+
+   - (optional) You may want to set up a [static domain in ngrok](https://dashboard.ngrok.com/domains). Once you've set up a static domain, you can use it by instead running `scripts/start-tunnel --domain spicy-rooster-fondly.ngrok-free.app` (replacing the URL with your own).
+
+   PS: this is only available on the paid plan. If your ngrok account is on the new plan, it just won't work.
+
 3. Visit your forwarding URL in the browser.
 
 ### Storybook
