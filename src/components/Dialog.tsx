@@ -1,6 +1,6 @@
 "use client";
 
-import { Dialog as HeadlessDialog, Transition } from "@headlessui/react";
+import { Dialog as HeadlessDialog, DialogPanel, DialogTitle, TransitionChild, Transition, Description } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import React, { Fragment } from "react";
 import Button from "./Button";
@@ -37,13 +37,12 @@ export default function Dialog({
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
-      <HeadlessDialog 
-        as="div" 
-        className="relative z-50" 
+      <HeadlessDialog
+        className="relative z-50"
         onClose={closeOnOverlayClick ? onClose : () => {}}
       >
         {/* Backdrop */}
-        <Transition.Child
+        <TransitionChild
           as={Fragment}
           enter="ease-out duration-300"
           enterFrom="opacity-0"
@@ -53,11 +52,11 @@ export default function Dialog({
           leaveTo="opacity-0"
         >
           <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" aria-hidden="true" />
-        </Transition.Child>
+        </TransitionChild>
 
         {/* Panel */}
         <div className="fixed inset-0 flex items-center justify-center p-4 overflow-y-auto">
-          <Transition.Child
+          <TransitionChild
             as={Fragment}
             enter="ease-out duration-300"
             enterFrom="opacity-0 scale-95"
@@ -66,29 +65,29 @@ export default function Dialog({
             leaveFrom="opacity-100 scale-100"
             leaveTo="opacity-0 scale-95"
           >
-            <HeadlessDialog.Panel className={`w-full ${sizeClasses[size]} rounded-xl bg-white p-6 shadow-xl relative`}>
+            <DialogPanel className={`w-full ${sizeClasses[size]} rounded-xl bg-white p-6 shadow-xl relative`}>
               {showCloseButton && (
                 <button
                   onClick={onClose}
-                  className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 focus:outline-none"
+                  className="hover:cursor-pointer absolute top-4 right-4 text-gray-500 hover:text-gray-700 focus:outline-none"
                   aria-label="Close dialog"
                 >
-                  <XMarkIcon className="h-6 w-6" />
+                  <XMarkIcon className="h-6 w-6" aria-hidden="true" />
                 </button>
               )}
 
               {/* Title */}
               {title && (
-                <HeadlessDialog.Title as="h3" className="text-lg font-bold mb-2">
+                <DialogTitle as="h3" className="text-lg font-bold mb-2">
                   {title}
-                </HeadlessDialog.Title>
+                </DialogTitle>
               )}
 
               {/* Description */}
               {description && (
-                <HeadlessDialog.Description className="text-sm text-gray-500 mb-4">
+                <Description className="text-sm text-gray-500 mb-4">
                   {description}
-                </HeadlessDialog.Description>
+                </Description>
               )}
 
               {/* Content */}
@@ -102,8 +101,8 @@ export default function Dialog({
                   {footer}
                 </div>
               )}
-            </HeadlessDialog.Panel>
-          </Transition.Child>
+            </DialogPanel>
+          </TransitionChild>
         </div>
       </HeadlessDialog>
     </Transition>
@@ -111,12 +110,12 @@ export default function Dialog({
 }
 
 // Convenience components for standard dialog actions
-export function DialogActions({ 
-  children, 
-  className = "" 
-}: { 
+export function DialogActions({
+  children,
+  className = ""
+}: {
   children: React.ReactNode,
-  className?: string 
+  className?: string
 }) {
   return (
     <div className={`mt-6 flex justify-end gap-2 ${className}`}>
@@ -125,12 +124,12 @@ export function DialogActions({
   );
 }
 
-export function DialogCloseButton({ 
-  onClick, 
-  children = "Cancel" 
-}: { 
+export function DialogCloseButton({
+  onClick,
+  children = "Cancel"
+}: {
   onClick: () => void,
-  children?: React.ReactNode 
+  children?: React.ReactNode
 }) {
   return (
     <Button variant="secondary" onClick={onClick}>
@@ -139,21 +138,21 @@ export function DialogCloseButton({
   );
 }
 
-export function DialogConfirmButton({ 
-  onClick, 
+export function DialogConfirmButton({
+  onClick,
   children = "Confirm",
   isLoading = false,
   disabled = false,
-}: { 
+}: {
   onClick: () => void,
   children?: React.ReactNode,
   isLoading?: boolean,
   disabled?: boolean,
 }) {
   return (
-    <Button 
-      variant="primary" 
-      onClick={onClick} 
+    <Button
+      variant="primary"
+      onClick={onClick}
       isLoading={isLoading}
       disabled={disabled}
     >

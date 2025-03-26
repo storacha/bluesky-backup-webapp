@@ -35,7 +35,7 @@ function KeyImportForm ({ dbKey, importKey }: { dbKey: Key, importKey: KeyImport
         {...register('keyMaterial')}
         placeholder="JWK Formatted Key"
       />
-      <Button 
+      <Button
         type="submit"
         variant="primary"
         className="text-xs uppercase font-bold"
@@ -56,7 +56,7 @@ function KeyDetails ({ dbKey, onDone, importKey }: KeyDetailsProps) {
   const [secret, setSecret] = useState<string>()
   const [showImport, setShowImport] = useState<boolean>(false)
   const keyPair = dbKey?.keyPair
-  
+
   async function showSecret () {
     if (keyPair?.toSecret) {
       setSecret(await keyPair?.toSecret())
@@ -64,11 +64,11 @@ function KeyDetails ({ dbKey, onDone, importKey }: KeyDetailsProps) {
       console.warn("can't show secret", keyPair)
     }
   }
-  
+
   function hideSecret () {
     setSecret(undefined)
   }
-  
+
   async function importAndClose (key: Key, keyMaterial: string) {
     if (importKey) {
       await importKey(key, keyMaterial)
@@ -77,9 +77,9 @@ function KeyDetails ({ dbKey, onDone, importKey }: KeyDetailsProps) {
       console.warn('importKey was not defined, cannot import key')
     }
   }
-  
+
   const did = dbKey?.id || keyPair?.did()
-  
+
   return (
     <div className="flex flex-col space-y-4">
       {did && (
@@ -91,7 +91,7 @@ function KeyDetails ({ dbKey, onDone, importKey }: KeyDetailsProps) {
           </div>
         </div>
       )}
-      
+
       {dbKey?.symkeyCid && (
         <div className="flex flex-col space-y-1">
           <h3 className="text-xs font-semibold text-gray-600">SYMKEY CID</h3>
@@ -101,7 +101,7 @@ function KeyDetails ({ dbKey, onDone, importKey }: KeyDetailsProps) {
           </div>
         </div>
       )}
-      
+
       {(showImport && importKey && dbKey) ? (
         <div className="mt-2">
           <KeyImportForm dbKey={dbKey} importKey={importAndClose} />
@@ -110,11 +110,11 @@ function KeyDetails ({ dbKey, onDone, importKey }: KeyDetailsProps) {
         secret ? (
           <div className="flex flex-col mt-2">
             <h3 className="text-xs font-semibold text-gray-600 mb-1">SECRET KEY</h3>
-            <div className="whitespace-pre w-full max-h-40 font-mono text-xs overflow-auto bg-gray-100 p-2 rounded-lg border">
+            <div className="whitespace-pre w-xl max-h-40 font-mono text-xs overflow-auto bg-gray-100 p-2 rounded-lg ring-1 ring-gray-300">
               {secret}
             </div>
             <div className="flex flex-row justify-between mt-3">
-              <Button 
+              <Button
                 variant="secondary"
                 onClick={hideSecret}
                 leftIcon={<EyeSlashIcon className="h-4 w-4" />}
@@ -127,7 +127,7 @@ function KeyDetails ({ dbKey, onDone, importKey }: KeyDetailsProps) {
         ) : (
           <div className="flex flex-wrap gap-2 mt-3">
             {!keyPair?.publicKey && (
-              <Button 
+              <Button
                 variant="secondary"
                 onClick={() => { setShowImport(true) }}
               >
@@ -135,7 +135,7 @@ function KeyDetails ({ dbKey, onDone, importKey }: KeyDetailsProps) {
               </Button>
             )}
             {keyPair?.privateKey && (
-              <Button 
+              <Button
                 variant="secondary"
                 onClick={showSecret}
                 leftIcon={<EyeIcon className="h-4 w-4" />}
@@ -144,7 +144,7 @@ function KeyDetails ({ dbKey, onDone, importKey }: KeyDetailsProps) {
               </Button>
             )}
             {onDone && (
-              <Button 
+              <Button
                 variant="primary"
                 onClick={onDone}
               >
@@ -195,8 +195,8 @@ export function KeychainView ({
     <div className={`p-4 ${className}`}>
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-bold text-gray-800">Encryption Keys</h2>
-        <Button 
-          variant="secondary" 
+        <Button
+          variant="secondary"
           leftIcon={<PlusIcon className="h-4 w-4" />}
           onClick={onClickAdd}
           className="text-sm"
@@ -205,7 +205,7 @@ export function KeychainView ({
           New Key
         </Button>
       </div>
-      
+
       {generatingKeyPair ? (
         <div className="text-center py-4">
           <Loader className="h-6 w-6 mx-auto" />
@@ -214,9 +214,9 @@ export function KeychainView ({
       ) : newKey ? (
         <div className="border border-red-200 rounded-lg p-4 mb-4 bg-red-50">
           <h3 className="font-bold mb-2">We&apos;ve created your new key!</h3>
-          <KeyDetails 
-            dbKey={newKey} 
-            onDone={() => { setNewKey(undefined) }} 
+          <KeyDetails
+            dbKey={newKey}
+            onDone={() => { setNewKey(undefined) }}
           />
         </div>
       ) : (
@@ -225,8 +225,8 @@ export function KeychainView ({
             <div className="text-center py-6 bg-gray-50 rounded-lg">
               <KeyIcon className="h-8 w-8 mx-auto text-gray-400" />
               <p className="mt-2 text-gray-500">No encryption keys found</p>
-              <Button 
-                variant="primary" 
+              <Button
+                variant="primary"
                 className="mt-4"
                 onClick={onClickAdd}
               >
@@ -236,13 +236,13 @@ export function KeychainView ({
           ) : (
             <div className="space-y-2">
               {keys.map((key) => (
-                <div 
-                  key={key.id} 
+                <div
+                  key={key.id}
                   className={`flex items-center p-3 rounded-lg border ${
                     selectedKey?.id === key.id ? 'bg-red-50 border-red-200' : 'bg-white border-gray-200'
                   } hover:border-red-200 transition-all duration-200`}
                 >
-                  <div 
+                  <div
                     className="flex-1 cursor-pointer"
                     onClick={() => { setSelectedKey(key) }}
                   >
@@ -251,18 +251,18 @@ export function KeychainView ({
                       <div className="text-xs text-gray-500">Symkey: {shortenCID(key.symkeyCid)}</div>
                     )}
                   </div>
-                  
+
                   <div className="flex space-x-2">
-                    <Button 
-                      variant="ghost" 
+                    <Button
+                      variant="ghost"
                       className="p-1"
                       onClick={() => openKeyDetails(key)}
                       aria-label="View key details"
                     >
                       <Cog8ToothIcon className="h-5 w-5 text-gray-600" />
                     </Button>
-                    <Button 
-                      variant="ghost" 
+                    <Button
+                      variant="ghost"
                       className="p-1"
                       onClick={() => forgetKey(key)}
                       aria-label="Delete key"
@@ -280,13 +280,13 @@ export function KeychainView ({
         isOpen={isKeyDetailsDialogOpen}
         onClose={() => setIsKeyDetailsDialogOpen(false)}
         title="Key Details"
-        size="md"
+        size="lg"
       >
         {selectedKeyDetails && (
-          <KeyDetails 
-            dbKey={selectedKeyDetails} 
+          <KeyDetails
+            dbKey={selectedKeyDetails}
             importKey={importKey}
-            onDone={() => setIsKeyDetailsDialogOpen(false)} 
+            onDone={() => setIsKeyDetailsDialogOpen(false)}
           />
         )}
       </Dialog>

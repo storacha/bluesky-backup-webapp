@@ -155,7 +155,7 @@ export function CreateSpaceModal({ isOpen, onClose, account }: CreateSpaceModalP
             className="absolute hover:cursor-pointer top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors"
           >
             <XMarkIcon className="h-6 w-6" aria-hidden="true" />
-            <span className="sr-only">Close modal</span>
+            <span className="sr-only">Close dialog</span>
           </button>
           <DialogTitle className="text-lg font-bold mb-4">
             Create New Space
