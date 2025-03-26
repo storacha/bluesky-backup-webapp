@@ -1,20 +1,27 @@
-"use client";
+'use client'
 
-import { Dialog as HeadlessDialog, DialogPanel, DialogTitle, TransitionChild, Transition, Description } from "@headlessui/react";
-import { XMarkIcon } from "@heroicons/react/24/outline";
-import React, { Fragment } from "react";
-import Button from "./Button";
+import {
+  Dialog as HeadlessDialog,
+  DialogPanel,
+  DialogTitle,
+  TransitionChild,
+  Transition,
+  Description,
+} from '@headlessui/react'
+import { XMarkIcon } from '@heroicons/react/24/outline'
+import React, { Fragment } from 'react'
+import Button from './Button'
 
 export interface DialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  title?: React.ReactNode;
-  description?: React.ReactNode;
-  children?: React.ReactNode;
-  footer?: React.ReactNode;
-  size?: "sm" | "md" | "lg" | "xl";
-  showCloseButton?: boolean;
-  closeOnOverlayClick?: boolean;
+  isOpen: boolean
+  onClose: () => void
+  title?: React.ReactNode
+  description?: React.ReactNode
+  children?: React.ReactNode
+  footer?: React.ReactNode
+  size?: 'sm' | 'md' | 'lg' | 'xl'
+  showCloseButton?: boolean
+  closeOnOverlayClick?: boolean
 }
 
 export default function Dialog({
@@ -24,16 +31,16 @@ export default function Dialog({
   description,
   children,
   footer,
-  size = "md",
+  size = 'md',
   showCloseButton = true,
   closeOnOverlayClick = true,
 }: DialogProps) {
   const sizeClasses = {
-    sm: "max-w-sm",
-    md: "max-w-md",
-    lg: "max-w-lg",
-    xl: "max-w-xl",
-  };
+    sm: 'max-w-sm',
+    md: 'max-w-md',
+    lg: 'max-w-lg',
+    xl: 'max-w-xl',
+  }
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -51,7 +58,10 @@ export default function Dialog({
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" aria-hidden="true" />
+          <div
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm"
+            aria-hidden="true"
+          />
         </TransitionChild>
 
         {/* Panel */}
@@ -65,7 +75,9 @@ export default function Dialog({
             leaveFrom="opacity-100 scale-100"
             leaveTo="opacity-0 scale-95"
           >
-            <DialogPanel className={`w-full ${sizeClasses[size]} rounded-xl bg-white p-6 shadow-xl relative`}>
+            <DialogPanel
+              className={`w-full ${sizeClasses[size]} rounded-xl bg-white p-6 shadow-xl relative`}
+            >
               {showCloseButton && (
                 <button
                   onClick={onClose}
@@ -91,63 +103,57 @@ export default function Dialog({
               )}
 
               {/* Content */}
-              <div className="mt-2">
-                {children}
-              </div>
+              <div className="mt-2">{children}</div>
 
               {/* Footer */}
               {footer && (
-                <div className="mt-6 flex justify-end space-x-2">
-                  {footer}
-                </div>
+                <div className="mt-6 flex justify-end space-x-2">{footer}</div>
               )}
             </DialogPanel>
           </TransitionChild>
         </div>
       </HeadlessDialog>
     </Transition>
-  );
+  )
 }
 
 // Convenience components for standard dialog actions
 export function DialogActions({
   children,
-  className = ""
+  className = '',
 }: {
-  children: React.ReactNode,
+  children: React.ReactNode
   className?: string
 }) {
   return (
-    <div className={`mt-6 flex justify-end gap-2 ${className}`}>
-      {children}
-    </div>
-  );
+    <div className={`mt-6 flex justify-end gap-2 ${className}`}>{children}</div>
+  )
 }
 
 export function DialogCloseButton({
   onClick,
-  children = "Cancel"
+  children = 'Cancel',
 }: {
-  onClick: () => void,
+  onClick: () => void
   children?: React.ReactNode
 }) {
   return (
     <Button variant="secondary" onClick={onClick}>
       {children}
     </Button>
-  );
+  )
 }
 
 export function DialogConfirmButton({
   onClick,
-  children = "Confirm",
+  children = 'Confirm',
   isLoading = false,
   disabled = false,
 }: {
-  onClick: () => void,
-  children?: React.ReactNode,
-  isLoading?: boolean,
-  disabled?: boolean,
+  onClick: () => void
+  children?: React.ReactNode
+  isLoading?: boolean
+  disabled?: boolean
 }) {
   return (
     <Button
@@ -158,5 +164,5 @@ export function DialogConfirmButton({
     >
       {children}
     </Button>
-  );
+  )
 }
