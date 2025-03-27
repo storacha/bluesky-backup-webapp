@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableHeaderCell,
   TableRow,
-} from './Table'
+} from '@/components/ui/Table'
 
 export function Backups({ className = '' }: { className?: string }) {
   const { backupsStore } = useBackupsContext()

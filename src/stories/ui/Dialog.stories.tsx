@@ -4,8 +4,8 @@ import Dialog, {
   DialogActions,
   DialogCloseButton,
   DialogConfirmButton,
-} from '@/components/Dialog'
-import Button from '@/components/Button'
+} from '@/components/ui/Dialog'
+import Button from '@/components/ui/Button'
 
 const meta = {
   title: 'UI/Dialog',

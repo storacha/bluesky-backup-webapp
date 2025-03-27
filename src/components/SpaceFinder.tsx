@@ -2,9 +2,9 @@ import type { Space } from '@w3ui/react'
 import { useState } from 'react'
 import { ChevronDownIcon, CheckIcon } from '@heroicons/react/20/solid'
 import { shortenDID } from '@/lib/ui'
-import Dropdown from './Dropdown'
-import Input from './Input'
-import type { DropdownItem } from './Dropdown'
+import Dropdown from '@/components/ui/Dropdown'
+import Input from '@/components/ui/Input'
+import type { DropdownItem } from '@/components/ui/Dropdown'
 
 interface SpaceFinderProps {
   spaces: Space[]

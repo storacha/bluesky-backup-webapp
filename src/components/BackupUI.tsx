@@ -23,7 +23,7 @@ import {
 import { useBackupsContext } from '@/contexts/backups'
 import { Blob, PrefsDoc, Repo } from '@/lib/db'
 import { CreateSpaceModal } from './CreateSpace'
-import Button from './Button'
+import Button from '@/components/ui/Button'
 import { Key, useKeychainContext } from '@/contexts/keychain'
 import { shortenDID } from '@/lib/ui'
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react'
