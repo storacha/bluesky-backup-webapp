@@ -3,8 +3,8 @@
 import { useBskyAuthContext } from '@/contexts'
 import { REQUIRED_ATPROTO_SCOPE } from '@/lib/constants'
 import { useCallback, useState } from 'react'
-import Button from './Button'
-import Input from './Input'
+import Button from '@/components/ui/Button'
+import Input from '@/components/ui/Input'
 
 export default function BlueskyAuthenticator() {
   const { initialized, authenticated, bskyAuthClient, userProfile, session } =

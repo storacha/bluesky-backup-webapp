@@ -5,8 +5,8 @@ import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import * as StorachaSpace from '@web3-storage/w3up-client/space'
 import { shorten } from '@/lib/ui'
-import Button from './Button'
-import Input from './Input'
+import Button from '@/components/ui/Button'
+import Input from '@/components/ui/Input'
 
 type SpaceCreationState = 'idle' | 'creating-space' | 'creating-delegation'
 

@@ -3,7 +3,7 @@
 import React from 'react'
 
 import { useBskyAuthContext } from '@/contexts'
-import { Loader } from '@/components/Loader'
+import { Loader } from '@/components/ui/Loader'
 import StorachaAuthenticator from '@/components/StorachaAuthenticator'
 import BlueskyAuthenticator from '@/components/BlueskyAuthenticator'
 import { useW3 } from '@w3ui/react'

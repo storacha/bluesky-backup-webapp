@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import Dropdown from '@/components/Dropdown'
+import Dropdown from '@/components/ui/Dropdown'
 import {
   ArrowRightIcon,
   TrashIcon,

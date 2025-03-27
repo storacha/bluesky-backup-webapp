@@ -14,11 +14,11 @@ import { useForm } from 'react-hook-form'
 import { shortenCID, shortenDID } from '@/lib/ui'
 import { KeychainContextProps, useKeychainContext } from '@/contexts/keychain'
 import type { Key, KeyImportFn } from '@/contexts/keychain'
-import CopyButton from './CopyButton'
-import Button from './Button'
-import Input from './Input'
-import Dialog from './Dialog'
-import { Loader } from './Loader'
+import CopyButton from '@/components/ui/CopyButton'
+import Button from '@/components/ui/Button'
+import Input from '@/components/ui/Input'
+import Dialog from '@/components/ui/Dialog'
+import { Loader } from '@/components/ui/Loader'
 
 interface KeyImportFormParams {
   keyMaterial: string

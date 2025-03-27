@@ -2,9 +2,9 @@
 
 import React, { ReactNode } from 'react'
 import { Authenticator, useW3, useAuthenticator } from '@w3ui/react'
-import { Loader } from './Loader'
-import Button from './Button'
-import Input from './Input'
+import { Loader } from '@/components/ui/Loader'
+import Button from '@/components/ui/Button'
+import Input from '@/components/ui/Input'
 
 export function AuthenticationForm(): ReactNode {
   const [{ submitted }] = useAuthenticator()
